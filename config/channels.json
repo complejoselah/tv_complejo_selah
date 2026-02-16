@@ -1,0 +1,122 @@
+{
+  "brand": {
+    "title": "Selah TV",
+    "subtitle": "Tv en vivo, Musica, Peliculas y Series",
+    "logo": "assets/logo-header.png",
+    "background": "assets/bg.jpg",
+    "accent": "#F5C542"
+  },
+  "shortcuts": [
+    {
+      "name": "Eligidos de Selah",
+      "desc": "Películas y Series",
+      "icon": "assets/logoseries.png",
+      "url": "http://cabanas-selah-server.tail87dd64.ts.net:8096"
+    },
+    {
+  "name": "Netflix",
+  "desc": "Iniciar sesión",
+  "icon": "assets/netflix.png",
+  "url": "https://www.netflix.com/login"
+},
+{
+  "name": "Disney+",
+  "desc": "Iniciar sesión",
+  "icon": "assets/disney.jpg",
+  "url": "https://www.disneyplus.com/"
+},
+{
+  "name": "YouTube",
+  "desc": "Abrir YouTube",
+  "icon": "assets/youtube.jpg",
+  "url": "https://www.youtube.com/"
+}
+
+  ],
+  "channels": [
+    {
+      "name": "TN - En vivo",
+      "icon": "assets/tn.png",
+      "url": "cb12KmMMDJA",
+      "tag": "Noticias",
+      "type": "youtube"
+    },
+    {
+      "name": "C5N - En vivo",
+      "icon": "assets/c5n.jpeg",
+      "url": "SF06Qy1Ct6Y",
+      "tag": "Noticias",
+      "type": "youtube"
+    },
+    {
+      "name": "A24 - En vivo",
+      "icon": "assets/a24.png",
+      "url": "ArKbAx1K-2U",
+      "tag": "Noticias",
+      "type": "youtube"
+    },
+    {
+      "name": "Canal 26 - En vivo",
+      "icon": "assets/c26.jpeg",
+      "url": "YCeLE7or9wA",
+      "tag": "Noticias",
+      "type": "youtube"
+    },
+    {
+      "name": "LN+ - En vivo",
+      "icon": "assets/ln.jpg",
+      "url": "PDtB9Hc0YJM",
+      "tag": "Noticias",
+      "type": "youtube"
+    },
+    {
+      "name": "AR 12 - En vivo",
+      "icon": "assets/ar12.jpg",
+      "url": "JrmCaXL5GZs",
+      "tag": "Noticias",
+      "type": "youtube"
+    },
+    {
+      "name": "TVP - En vivo",
+      "icon": "assets/tvp.png",
+      "url": "2WyAPg0CYRY",
+      "tag": "Noticias",
+      "type": "youtube"
+    },
+    {
+      "name": "LoFi - Música",
+      "icon": "assets/lofi.jpg",
+      "url": "jfKfPfyJRdk",
+      "tag": "Música",
+      "type": "youtube"
+    },
+    {
+      "name": "Espn Premium",
+      "icon": "assets/espn.jpeg",
+      "url": "https://smjt9q.envivoslatam.org/espnpremium/tracks-v1a1/mono.m3u8?ip=181.44.130.47&token=e49bafcc9b49b38ddd95f0ee50e8c978d25a9357-b9-1770979846-1770925846",
+      "tag": "Deportes",
+      "type": "hls"
+    },
+    {
+      "name": "TNT Sport",
+      "icon": "assets/tntsport.jpeg",
+      "url": "https://yce5o.envivoslatam.org/tntsports/tracks-v1a1/mono.m3u8?ip=181.44.130.47&token=dba6b7f9130df6aa88527769d6b5aeceb9d873df-f0-1770980088-1770926088",
+      "tag": "Deportes",
+      "type": "hls"
+    },
+    {
+      "name": "TyC Sport",
+      "icon": "assets/tycsport.png",
+      "url": "https://kh5vy.envivoslatam.org/tycsports/tracks-v1a1/mono.m3u8?ip=181.44.130.47&token=bf959f893f6fd9d767184eb44a70323d497a4ca9-96-1770979976-1770925976",
+      "tag": "Deportes",
+      "type": "hls"
+    },
+    {
+      "name": "FOX Sport",
+      "icon": "assets/fox.png",
+      "url": "https://iaw5b.envivoslatam.org/foxsports/tracks-v1a1/mono.m3u8?ip=181.44.130.47&token=7a238b716fe44bdfd8d99d29db8d61508eaedc08-71-1770980455-1770926455",
+      "tag": "Deportes",
+      "type": "hls"
+    }
+  ]
+}
