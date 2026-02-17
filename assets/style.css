@@ -2,7 +2,7 @@
 
 :root{
   --accent:#F5C542;
-  --bg: url("selah_bg.jpg"); /* fallback */
+  --bg: url("selah_bg.jpg");
 }
 
 html, body{ height:100%; }
@@ -14,7 +14,6 @@ body{
   min-height:100vh;
 }
 
-/* Overlay oscuro */
 body::before{
   content:"";
   position:fixed;
@@ -57,6 +56,41 @@ h2{
   text-shadow: 0 2px 10px rgba(0,0,0,.35);
 }
 
+/* Category header */
+.categoryHeader{
+  display:flex;
+  align-items:center;
+  gap: 14px;
+  margin: 6px 0 14px;
+}
+
+.categoryHeaderTitle{
+  margin: 0;
+  font-size: clamp(22px, 2.2vw, 34px);
+  text-shadow: 0 2px 10px rgba(0,0,0,.35);
+}
+
+/* Botón volver (HOME->CATEGORÍA) */
+.btnBackHome{
+  border: 0;
+  background: var(--accent);
+  color: #111;
+  padding: 12px 18px;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor:pointer;
+  box-shadow: 0 10px 28px rgba(0,0,0,.30);
+  transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+}
+
+.btnBackHome:hover{ transform: scale(1.03); }
+.btnBackHome:focus{
+  outline: none;
+  transform: scale(1.06);
+  box-shadow: 0 0 0 4px rgba(245,197,66,.35), 0 14px 38px rgba(0,0,0,.35);
+}
+
 /* Grid */
 .grid{
   display:grid;
@@ -64,7 +98,7 @@ h2{
   gap: 22px;
 }
 
-/* Card TV-friendly */
+/* Cards */
 .card{
   background: rgba(255,255,255,0.08);
   border: 1px solid rgba(255,255,255,0.12);
@@ -150,7 +184,7 @@ h2{
 }
 .footerInner .dot{ opacity: .7; }
 
-/* PLAYER FULLSCREEN */
+/* PLAYER */
 #player{
   position:fixed;
   inset:0;
@@ -182,13 +216,16 @@ h2{
   padding: 12px;
   background: linear-gradient(to bottom, rgba(0,0,0,.78), rgba(0,0,0,0));
   z-index:10001;
+
+  /* transición para ocultar “limpio” */
+  transition: opacity .20s ease, transform .20s ease;
 }
 
 .hudBtn{
   background: rgba(255,255,255,0.12);
   border: 1px solid rgba(255,255,255,0.18);
   color: #fff;
-  padding: 12px 16px; /* un poco más grande para TV */
+  padding: 12px 16px;
   border-radius: 12px;
   cursor: pointer;
   font-size: 16px;
@@ -202,7 +239,6 @@ h2{
   transform: scale(1.06);
   box-shadow: 0 0 18px rgba(255,255,255,.35);
 }
-
 
 .hudCenter{
   flex:1;
@@ -224,7 +260,12 @@ h2{
   align-items:center;
 }
 
-#player.hideHud .hud{ display:none; }
+/* Autohide HUD (player) */
+#player.hideHud .hud{
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+}
 
 /* Grilla dentro del player */
 .playerGrid{
@@ -246,6 +287,12 @@ h2{
   font-size: 22px;
 }
 
+/* Tarjetas de categoría (más tipo menú) */
+#homeCategories .card img{
+  aspect-ratio: 21/9;
+  object-fit: cover;
+}
+
 /* Pantallas chicas */
 @media (max-width: 520px){
   .grid{ grid-template-columns: 1fr; }
@@ -259,4 +306,24 @@ h2{
   }
 
   .footerInner{ font-size: 12px; gap:8px; }
+
+  .btnBackHome{ padding: 10px 14px; font-size: 14px; }
+}
+/* Overlay: SOLO captura toques cuando el HUD está oculto.
+   Si el HUD está visible, deja pasar el click/touch al iframe (para Play/Pause de YouTube). */
+#playerTap{
+  position:absolute;
+  inset:0;
+  z-index:10000; /* debajo de .hud (10001) y debajo de playerGrid (10002) */
+  background: transparent;
+  display:none;
+  cursor: pointer;
+  touch-action: manipulation;
+  pointer-events: none; /* default: NO bloquear el iframe */
+}
+#player.show #playerTap{ display:block; }
+
+/* solo cuando ocultás HUD, el overlay se activa para poder “traer de vuelta” los controles */
+#player.hideHud #playerTap{
+  pointer-events: auto;
 }
