@@ -1,122 +1,154 @@
 {
   "brand": {
     "title": "Selah TV",
-    "subtitle": "Tv en vivo, Musica, Peliculas y Series",
+    "subtitle": "TV en vivo • Música • Películas • Series",
     "logo": "assets/logo-header.png",
     "background": "assets/bg.jpg",
-    "accent": "#F5C542"
+    "accent": "#F5C542",
+    "hudAutoHideMs": 6500
   },
+
   "shortcuts": [
     {
-      "name": "Eligidos de Selah",
+      "name": "Selah TV (Sitio)",
+      "desc": "Home del complejo",
+      "icon": "assets/logo-header.png",
+      "url": "http://complejoselah.com.ar/"
+    },
+    {
+      "name": "YouTube",
+      "desc": "Abrir YouTube",
+      "icon": "assets/youtube.jpg",
+      "url": "https://www.youtube.com/"
+    },
+    {
+      "name": "Netflix",
       "desc": "Películas y Series",
-      "icon": "assets/logoseries.png",
-      "url": "http://cabanas-selah-server.tail87dd64.ts.net:8096"
+      "icon": "assets/netflix.png",
+      "url": "https://www.netflix.com/login"
     },
     {
-  "name": "Netflix",
-  "desc": "Iniciar sesión",
-  "icon": "assets/netflix.png",
-  "url": "https://www.netflix.com/login"
-},
-{
-  "name": "Disney+",
-  "desc": "Iniciar sesión",
-  "icon": "assets/disney.jpg",
-  "url": "https://www.disneyplus.com/"
-},
-{
-  "name": "YouTube",
-  "desc": "Abrir YouTube",
-  "icon": "assets/youtube.jpg",
-  "url": "https://www.youtube.com/"
-}
-
-  ],
-  "channels": [
-    {
-      "name": "TN - En vivo",
-      "icon": "assets/tn.png",
-      "url": "cb12KmMMDJA",
-      "tag": "Noticias",
-      "type": "youtube"
+      "name": "Disney+",
+      "desc": "Peliculas, Series, Deportes",
+      "icon": "assets/disney.jpg",
+      "url": "https://www.disneyplus.com/"
     },
     {
-      "name": "C5N - En vivo",
-      "icon": "assets/c5n.jpeg",
-      "url": "SF06Qy1Ct6Y",
-      "tag": "Noticias",
-      "type": "youtube"
+      "name": "Paramount",
+      "desc": "Películas y Series",
+      "icon": "assets/paramount.jpeg",
+      "url": "https://www.paramountplus.com/ar/"
     },
     {
-      "name": "A24 - En vivo",
-      "icon": "assets/a24.png",
-      "url": "ArKbAx1K-2U",
-      "tag": "Noticias",
-      "type": "youtube"
+      "name": "Prime Video",
+      "desc": "Películas y Series",
+      "icon": "assets/primevideo.jpg",
+      "url": "https://www.primevideo.com/offers/nonprimehomepage/ref=dv_web_force_root"
     },
     {
-      "name": "Canal 26 - En vivo",
-      "icon": "assets/c26.jpeg",
-      "url": "YCeLE7or9wA",
-      "tag": "Noticias",
-      "type": "youtube"
-    },
-    {
-      "name": "LN+ - En vivo",
-      "icon": "assets/ln.jpg",
-      "url": "PDtB9Hc0YJM",
-      "tag": "Noticias",
-      "type": "youtube"
-    },
-    {
-      "name": "AR 12 - En vivo",
-      "icon": "assets/ar12.jpg",
-      "url": "JrmCaXL5GZs",
-      "tag": "Noticias",
-      "type": "youtube"
-    },
-    {
-      "name": "TVP - En vivo",
-      "icon": "assets/tvp.png",
-      "url": "2WyAPg0CYRY",
-      "tag": "Noticias",
-      "type": "youtube"
-    },
-    {
-      "name": "LoFi - Música",
-      "icon": "assets/lofi.jpg",
-      "url": "jfKfPfyJRdk",
-      "tag": "Música",
-      "type": "youtube"
-    },
-    {
-      "name": "Espn Premium",
-      "icon": "assets/espn.jpeg",
-      "url": "https://iaw5b.envivoslatam.org/espnpremium/tracks-v1a1/mono.m3u8?ip=181.44.130.47&token=00e92cb136ff04c0b5ff5b43ec9268876e3b6721-39-1771326685-1771272685",
-      "tag": "Deportes",
-      "type": "hls"
-    },
-    {
-      "name": "TNT Sport",
-      "icon": "assets/tntsport.jpeg",
-      "url": "https://kh5vy.envivoslatam.org/tntsports/tracks-v1a1/mono.m3u8?ip=181.44.130.47&token=c911fc859ed552d70eb468c1f38023418f062a8e-33-1771326630-1771272630",
-      "tag": "Deportes",
-      "type": "hls"
-    },
-    {
-      "name": "TyC Sport",
-      "icon": "assets/tycsport.png",
-      "url": "https://iaw5b.envivoslatam.org/tycsports/tracks-v1a1/mono.m3u8?ip=181.44.130.47&token=aebe717e87ef4cea2799d06f73248cc5493d6742-df-1771326453-1771272453",
-      "tag": "Deportes",
-      "type": "hls"
-    },
-    {
-      "name": "FOX Sport",
-      "icon": "assets/fox.png",
-      "url": "https://iaw5b.envivoslatam.org/foxsports/tracks-v1a1/mono.m3u8?ip=181.44.130.47&token=7a238b716fe44bdfd8d99d29db8d61508eaedc08-71-1770980455-1770926455",
-      "tag": "Deportes",
-      "type": "hls"
+      "name": "HBO Max",
+      "desc": "Peliculas y Series",
+      "icon": "assets/hbomax.jpg",
+      "url": "https://www.hbomax.com/ar/es"
     }
+  ],
+
+  "homeCategories": [
+    { "id": "noticias-ar", "name": "Noticias Argentina", "desc": "TN, C5N, A24, LN+, TVP…", "icon": "assets/news_ar.webp" },
+    { "id": "noticias-mundo", "name": "Noticias Mundo", "desc": "DW, France 24, Euronews…", "icon": "assets/news_world.jpg" },
+    { "id": "cristianos-musica", "name": "Cristianos • Música", "desc": "Worship / Alabanza y oficiales", "icon": "assets/worship.jpg" },
+    { "id": "cristianos-canales", "name": "Cristianos • Canales", "desc": "Predicación / canales oficiales", "icon": "assets/tbn.jpeg" },
+    { "id": "musica-relax", "name": "Música / Relax", "desc": "LoFi, Jazz, Chill…", "icon": "assets/lofi.jpg" },
+    { "id": "docs-ciencia", "name": "Documentales / Ciencia", "desc": "NASA, NatGeo…", "icon": "assets/documentales.png" },
+    { "id": "pelis-legales", "name": "Películas y Series", "desc": "Peliculas y Series", "icon": "assets/peliculas.webp" },
+    { "id": "deportes-canales", "name": "Canales Deportivos", "desc": "TyC Sports, TNT Sport, ESPN, Directv Sports", "icon": "assets/deportes.jpeg" }
+    
+  ],
+
+  "categories": [
+    {
+      "id": "noticias-ar",
+      "name": "Noticias (Argentina)",
+      "items": [
+        { "name": "TN - En vivo", "icon": "assets/tn.png", "url": "cb12KmMMDJA", "type": "youtube" },
+        { "name": "C5N - En vivo", "icon": "assets/c5n.jpeg", "url": "SF06Qy1Ct6Y", "type": "youtube" },
+        { "name": "A24 - En vivo", "icon": "assets/a24.png", "url": "ArKbAx1K-2U", "type": "youtube" },
+        { "name": "Canal 26 - En vivo", "icon": "assets/c26.jpeg", "url": "YCeLE7or9wA", "type": "youtube" },
+        { "name": "LN+ - En vivo", "icon": "assets/ln.jpg", "url": "PDtB9Hc0YJM", "type": "youtube" },
+        { "name": "AR 12 - En vivo", "icon": "assets/ar12.jpg", "url": "JrmCaXL5GZs", "type": "youtube" },
+        { "name": "Cronica - En vivo", "icon": "assets/cronica.jpeg", "url": "sGnaFL_Syl0", "type": "youtube" },
+        { "name": "TV Pública - En vivo", "icon": "assets/tvp.png", "url": "2WyAPg0CYRY", "type": "youtube" }
+      ]
+    },
+
+    {
+      "id": "noticias-mundo",
+      "name": "Noticias (Mundo)",
+      "items": [
+        { "name": "DW Español - En vivo", "icon": "assets/dw.png", "url": "jRnqxURJ120", "type": "youtube" },
+        { "name": "France 24 Español - En vivo", "icon": "assets/france24.png", "url": "Y-IlMeCCtIg", "type": "youtube" },
+        { "name": "Euronews Español - En vivo", "icon": "assets/euronews.jpg", "url": "O9mOtdZ-nSk", "type": "youtube" }
+      ]
+    },
+
+    {
+      "id": "cristianos-musica",
+      "name": "Cristianos • Música",
+      "items": [
+        { "name": "The Global Prayer Room (Live)", "icon": "assets/globalplayer.jpg", "url": "0uaZ30NEHLU", "type": "youtube" },
+        { "name": "Alabanzas", "icon": "assets/alabanza.jpg", "url": "S-SDw8QwZSk", "type": "youtube" }
+        
+      ]
+    },
+
+    {
+      "id": "cristianos-canales",
+      "name": "Cristianos • Canales / Predicación",
+      "items": [
+        { "name": "La Biblia en vivo", "icon": "assets/biblia.jpeg", "url": "uc_rNq4Tb0k", "type": "youtube" },
+        { "name": "Ministerio Presencia", "icon": "assets/ministeriopresencia.png", "url": "ob6aEc6M5Vg", "type": "youtube" }
+        
+      ]
+    },
+
+    {
+      "id": "musica-relax",
+      "name": "Música / Relax",
+      "items": [
+        { "name": "LoFi Girl - Música", "icon": "assets/lofi.jpg", "url": "jfKfPfyJRdk", "type": "youtube" },
+        { "name": "LoFi Boy- Música", "icon": "assets/lofiboy.jpg", "url": "4xDzrJKXOOY", "type": "youtube" },
+        { "name": "Chill out Music", "icon": "assets/cafedelmar.jpg", "url": "aaYDiKTUOVQ", "type": "youtube" }
+      ]
+    },
+
+    {
+      "id": "docs-ciencia",
+      "name": "Documentales / Ciencia",
+      "items": [
+        { "name": "NASA (YouTube oficial)", "icon": "assets/nasa.jpeg", "url": "FV4Q9DryTG8", "type": "youtube" },
+        { "name": "Africa en Vivo", "icon": "assets/africa.jpeg", "url": "XsOU8JnEpNM", "type": "youtube" }
+      ]
+    },
+
+    {
+      "id": "pelis-legales",
+      "name": "Películas y Series",
+      "items": [
+        { "name": "Juegos de Vida", "icon": "assets/juegosdevida.jpg", "url": "https://cdnapisec.kaltura.com/p/513551/sp/51355100/playManifest/entryId/1_xm5be9d7/format/applehttp/protocol/https/flavorIds/1_j8ht0ajl,1_xtx8yjlt,1_1ldfjjqy,1_f9qltm79,1_isv2r269/preferredBitrate/1500/maxBitrate/10000/defaultAudioLang/en/a.m3u8?timestamp=1771362832&id=19027&ip=2800%3A810%3A564%3A8229%3A1dab%3A346a%3A20cc%3A143e&override_expiration=1500&sign=t67nUiOV5n90517CcXf7Aq6yLydeilU3hcJijjvXjD4%3D&playSessionId=d2e5e6c6-256d-7b20-8a2b-34501c8b3d47:75cd4acd-e1c3-fb01-85e2-a9414f9087b4&referrer=aHR0cHM6Ly93d3cucnVudGltZS50di9lcy9mZWF0dXJlL2p1ZWdvcy1kZS1sYS12aWRh&clientTag=html5:v7.232", "type": "web" },
+        { "name": "Dos pavos en apuros", "icon": "assets/dospavos.jpg", "url": "https://cdnapisec.kaltura.com/p/513551/sp/51355100/playManifest/entryId/1_urrc8744/format/applehttp/protocol/https/flavorIds/1_mnwjbiu6,1_cx25dee1,1_7khpczgz,1_4et50tcl,1_vz0qze3g/preferredBitrate/1500/maxBitrate/10000/defaultAudioLang/en/a.m3u8?timestamp=1771362520&id=21729&ip=2800%3A810%3A564%3A8229%3A1dab%3A346a%3A20cc%3A143e&override_expiration=1500&sign=CnRKJlGEfh59eN92cjjG%2Biun8MCWkb4RifJA7dNSADY%3D&playSessionId=cc1be308-166b-1ea8-3dae-59d5c0432be9:86f2eba0-ddf5-db12-7ded-93e5d2589c6e&referrer=aHR0cHM6Ly93d3cucnVudGltZS50di9lcy9mZWF0dXJlL2Rvcy1wYXZvcy1lbi1hcHVyb3M=&clientTag=html5:v7.232", "type": "web" },
+        { "name": "Mas Cerca de Dios", "icon": "assets/mascercadedios.jpg", "url": "https://cdnapisec.kaltura.com/p/513551/sp/51355100/playManifest/entryId/1_pi4bdxto/format/applehttp/protocol/https/flavorIds/1_23aehhpk,1_e34n02co,1_902rn5hd,1_d7uz2yxz,1_589emeo6/preferredBitrate/1500/maxBitrate/10000/defaultAudioLang/en/a.m3u8?timestamp=1771362047&id=15468&ip=2800%3A810%3A564%3A8229%3A1dab%3A346a%3A20cc%3A143e&override_expiration=1500&sign=9GjLtGjEDX%2B4gZ5pUX%2F36UJjUZ89X7DXxtabxbLaXHU%3D&playSessionId=bd130299-edf6-aeab-73eb-2d5d8e6d8515:acef1ade-eaa1-4862-e145-d4632514b45c&referrer=aHR0cHM6Ly93d3cucnVudGltZS50di9lcy9mZWF0dXJlL21hcy1jZXJjYS1kZS1kaW9zLWVsLXZpYWplLWRlLWplc3NpY2E=&clientTag=html5:v7.232", "type": "web" },
+        { "name": "Plata Dulce", "icon": "assets/platadulce.jpg", "url": "SSSCtldEkzQ", "type": "youtube" }
+      ]
+    }, 
+    {
+      "id": "deportes-canales",
+      "name": "Canales Deportivos",
+      "items": [
+        { "name": "TyC Sports", "icon": "assets/tycsports.png", "url":"https://qbk4f.envivoslatam.org/tycsports/tracks-v1a1/mono.m3u8?ip=181.44.130.47&token=2a0eb861eab99835ed007bf5f17ea5f2150166ef-de-1771401580-1771347580", "type": "web" },
+        { "name": "TNT Sport", "icon": "assets/tntsports.jpeg", "url": "https://vg7ie.envivoslatam.org/tntsports/tracks-v1a1/mono.m3u8?ip=181.44.130.47&token=3a86676bbfd24a9ac318b13047cc9ee53c4aa925-f6-1771401710-1771347710", "type": "web" },
+        { "name": "ESPN", "icon": "assets/espn.jpeg", "url": "https://mze7u.envivoslatam.org/espnpremium/tracks-v1a1/mono.m3u8?ip=181.44.130.47&token=f2bfb2380dce5bdeb5c2723849a6390b1363054a-79-1771402078-1771348078", "type": "web" },
+        { "name": "Directv Sports", "icon": "assets/directv.png", "url": "https://qbk4f.envivoslatam.org/dsports/tracks-v1a1/mono.m3u8?ip=181.44.130.47&token=9d5d50428bd1840e80e3aa9b86df5a7ab705878e-65-1771402023-1771348023", "type": "web" }
+      ]
+    }  
   ]
 }
