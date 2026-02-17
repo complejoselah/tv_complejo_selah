@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Permissions-Policy" content="autoplay=(self)">
+
   <title>Selah TV</title>
 
   <link rel="icon" type="image/x-icon" href="favicon_32x32.ico" />
@@ -10,6 +12,7 @@
 
   <meta name="theme-color" content="#0b0f12" />
   <link rel="stylesheet" href="assets/style.css?v=8" />
+
 </head>
 
 <body>
@@ -73,14 +76,14 @@
   </div>
 
   <!-- Player -->
+  
   <iframe
-    id="iframePlayer"
-    title="Reproductor"
-    frameborder="0"
-    allowfullscreen
-    allow="autoplay; encrypted-media; picture-in-picture"
-    referrerpolicy="strict-origin-when-cross-origin"
-  ></iframe>
+  id="iframePlayer"
+  frameborder="0"
+  allow="autoplay; fullscreen; encrypted-media"
+></iframe>
+
+
 
   <video id="videoPlayer" playsinline autoplay controls></video>
 
@@ -104,6 +107,6 @@
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
-  <script src="assets/app.js?v=8"></script>
+  <script src="assets/app.js?v=10"></script>
 </body>
 </html>
