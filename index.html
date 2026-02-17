@@ -5,16 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Selah TV</title>
 
-  <!-- Favicon en la raíz /selah_portal_tv/ -->
   <link rel="icon" type="image/x-icon" href="favicon_32x32.ico" />
   <link rel="shortcut icon" href="favicon_32x32.ico" />
 
   <meta name="theme-color" content="#0b0f12" />
-  <link rel="stylesheet" href="assets/style.css?v=5" />
+  <link rel="stylesheet" href="assets/style.css?v=8" />
 </head>
 
 <body>
-  <!-- Header mínimo: SOLO LOGO -->
   <header class="topbar" aria-label="Selah">
     <img
       src="assets/Selah.png"
@@ -26,18 +24,29 @@
   </header>
 
   <main class="container">
-    <section class="block">
-      <h2>Películas y Series</h2>
+    <!-- Accesos (HOME) -->
+    <section class="block" id="shortcutsBlock">
+      <h2 id="homeTitle">Accesos</h2>
       <div class="grid" id="shortcuts"></div>
     </section>
 
-    <section class="block">
-      <h2>Canales en vivo</h2>
-      <div class="grid" id="channels"></div>
+    <!-- HOME: categorías como tarjetas -->
+    <section class="block" id="homeCategoriesBlock">
+      <h2>Categorías</h2>
+      <div class="grid" id="homeCategories"></div>
+    </section>
+
+    <!-- VISTA CATEGORÍA -->
+    <section class="block" id="categoryView" hidden>
+      <div class="categoryHeader">
+        <button id="btnBackToHome" class="btnBackHome" type="button" aria-label="Volver">⬅ Volver</button>
+        <h2 id="categoryTitle" class="categoryHeaderTitle">Categoría</h2>
+      </div>
+
+      <div class="grid" id="categoryGrid"></div>
     </section>
   </main>
 
-  <!-- Footer -->
   <footer class="siteFooter">
     <div class="footerInner">
       <span>© <span id="year"></span> Complejo Selah</span>
@@ -47,50 +56,54 @@
   </footer>
 
   <!-- PLAYER -->
-  <div id="player" aria-hidden="true">
-    <div id="playerHud" class="hud">
-      <button id="btnBack" class="hudBtn" type="button">⬅ Volver</button>
+<div id="player" aria-hidden="true">
+  <!-- HUD -->
+  <div id="playerHud" class="hud" role="toolbar" aria-label="Controles del reproductor">
+    <button id="btnBack" class="hudBtn" type="button" aria-label="Volver">⬅ Volver</button>
 
-      <div class="hudCenter">
-        <div id="nowPlaying" class="nowPlaying">Canal</div>
-      </div>
-
-      <div class="hudRight">
-        <button id="btnGrid" class="hudBtn" type="button">⧉ Grilla</button>
-        <button id="btnPrev" class="hudBtn" type="button">⟵ Anterior</button>
-        <button id="btnNext" class="hudBtn" type="button">Siguiente ⟶</button>
-      </div>
+    <div class="hudCenter" aria-live="polite" aria-atomic="true">
+      <div id="nowPlaying" class="nowPlaying">Canal</div>
     </div>
 
-    <!-- YouTube -->
-    <iframe
-      id="iframePlayer"
-      title="Reproductor"
-      frameborder="0"
-      allowfullscreen
-      allow="autoplay; encrypted-media; picture-in-picture"
-      referrerpolicy="strict-origin-when-cross-origin"
-    ></iframe>
-
-    <!-- HLS (m3u8) -->
-    <video id="videoPlayer" playsinline autoplay controls></video>
-
-    <!-- Grilla dentro del player -->
-    <div id="playerGrid" class="playerGrid" hidden>
-      <div class="playerGridInner">
-        <h3>Canales</h3>
-        <div id="gridInsidePlayer" class="grid"></div>
-        <button id="btnCloseGrid" class="hudBtn" type="button" style="margin-top:12px;">
-          Cerrar
-        </button>
-      </div>
+    <div class="hudRight">
+      <button id="btnGrid" class="hudBtn" type="button" aria-label="Abrir grilla">⧉ Grilla</button>
+      <button id="btnPrev" class="hudBtn" type="button" aria-label="Canal anterior">⟵ Anterior</button>
+      <button id="btnNext" class="hudBtn" type="button" aria-label="Canal siguiente">Siguiente ⟶</button>
     </div>
   </div>
+
+  <!-- Player -->
+  <iframe
+    id="iframePlayer"
+    title="Reproductor"
+    frameborder="0"
+    allowfullscreen
+    allow="autoplay; encrypted-media; picture-in-picture"
+    referrerpolicy="strict-origin-when-cross-origin"
+  ></iframe>
+
+  <video id="videoPlayer" playsinline autoplay controls></video>
+
+  <!-- NUEVO: overlay transparente para capturar click/touch y re-mostrar HUD (clave para YouTube iframe) -->
+  <div id="playerTap" aria-hidden="true" title="Mostrar controles"></div>
+
+  <!-- Grilla -->
+  <div id="playerGrid" class="playerGrid" hidden>
+    <div class="playerGridInner">
+      <h3>Canales</h3>
+      <div id="gridInsidePlayer" class="grid"></div>
+      <button id="btnCloseGrid" class="hudBtn" type="button" style="margin-top:12px;">
+        Cerrar
+      </button>
+    </div>
+  </div>
+</div>
+
 
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
-  <script src="assets/app.js?v=4"></script>
+  <script src="assets/app.js?v=8"></script>
 </body>
 </html>
