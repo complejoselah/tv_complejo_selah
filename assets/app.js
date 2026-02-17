@@ -1,11 +1,11 @@
-
 const $ = (id) => document.getElementById(id);
 
 let CFG = null;
 
-// playlist = items reproducibles de la CATEGORÍA actual (youtube/hls)
+// playlist = items reproducibles (youtube/hls) de la categoría actual
 let PLAYLIST = [];
 let currentIndex = -1;
+
 let hls = null;
 
 let lastFocusMain = null;
@@ -17,10 +17,9 @@ let pushedPlayerState = false;
 let hudTimer = null;
 let HUD_HIDE_MS = 6500;
 
-// --- YouTube audio unlock state ---
-let YT_SOUND_URL = null;     // embed con mute=0 del canal actual
-let ytIsMuted = false;       // si el iframe actual está muteado
-let ytSoundUnlocked = false; // si el usuario ya hizo una interacción que permite audio
+// --- YouTube unlock ---
+let ytSoundUnlocked = false;
+let ytPendingVideoId = null; // id actual para recargar con sonido
 
 function toAbsUrl(path){
   if(!path) return "";
@@ -96,51 +95,13 @@ function makeCard({title, desc, icon, tag, onClick}){
   return card;
 }
 
-/**
- * YouTube embed:
- * - muted=true para permitir autoplay en Android/Chrome
- * - muted=false solo debe usarse luego de una interacción del usuario
- */
-function youtubeToEmbed(urlOrId, muted=true){
-  if(!urlOrId) return null;
-
-  // nota: playsinline=1 + autoplay=1
-  // mute se controla acá
-  const qs = `autoplay=1&${muted ? "mute=1" : "mute=0"}&controls=0&rel=0&modestbranding=1&fs=1&playsinline=1`;
-
-  if(/^[a-zA-Z0-9_-]{11}$/.test(urlOrId)){
-    return `https://www.youtube-nocookie.com/embed/${urlOrId}?${qs}`;
-  }
-
-  try{
-    const u = new URL(urlOrId);
-
-    if(u.hostname.includes("youtube.com") && u.pathname === "/watch"){
-      const v = u.searchParams.get("v");
-      if(v) return `https://www.youtube-nocookie.com/embed/${v}?${qs}`;
-    }
-
-    if(u.hostname.includes("youtube.com") && u.pathname.startsWith("/live/")){
-      const id = u.pathname.split("/live/")[1]?.split(/[?/]/)[0];
-      if(id) return `https://www.youtube-nocookie.com/embed/${id}?${qs}`;
-    }
-
-    if(u.hostname === "youtu.be"){
-      const id = u.pathname.replace("/", "").split(/[?/]/)[0];
-      if(id) return `https://www.youtube-nocookie.com/embed/${id}?${qs}`;
-    }
-
-    return null;
-  }catch{
-    return null;
-  }
-}
+/* ============ PLAYER HELPERS ============ */
 
 async function requestFullscreen(el){
   try{
     if(el.requestFullscreen) await el.requestFullscreen();
     else if(el.webkitRequestFullscreen) await el.webkitRequestFullscreen();
-  }catch(e){}
+  }catch{}
 }
 
 function exitFullscreenSafe(){
@@ -152,23 +113,25 @@ function exitFullscreenSafe(){
 
 function stopPlayers(){
   const iframe = $("iframePlayer");
-  iframe.src = "";
-  iframe.style.display = "none";
+  if(iframe){
+    iframe.src = "";
+    iframe.style.display = "none";
+  }
 
   const v = $("videoPlayer");
-  try{ v.pause(); }catch{}
-  v.removeAttribute("src");
-  v.load();
-  v.style.display = "none";
+  if(v){
+    try{ v.pause(); }catch{}
+    v.removeAttribute("src");
+    v.load();
+    v.style.display = "none";
+  }
 
   if(hls){
     try{ hls.destroy(); }catch{}
     hls = null;
   }
 
-  // reset YT state por canal
-  YT_SOUND_URL = null;
-  ytIsMuted = false;
+  ytPendingVideoId = null;
 }
 
 function setNowPlaying(text){
@@ -177,43 +140,22 @@ function setNowPlaying(text){
 }
 
 /* HUD autohide */
-function showHudAndArmTimer(){
+function showHudAndArmTimer(forceKeep=false){
   const player = $("player");
   if(!player) return;
 
   player.classList.remove("hideHud");
 
   if(hudTimer) clearTimeout(hudTimer);
+
+  // Para WEB (pluto/plex/etc) conviene NO ocultar el HUD
+  if(forceKeep) return;
+
   hudTimer = setTimeout(() => {
     if(isPlayerOpen() && !isGridOpen()){
       player.classList.add("hideHud");
     }
   }, HUD_HIDE_MS);
-}
-
-/**
- * Intenta "desmutear" YouTube recargando el iframe con mute=0.
- * Solo funciona confiable si viene inmediatamente después de una interacción del usuario.
- */
-function tryUnlockYoutubeAudio(){
-  if(!isPlayerOpen() || isGridOpen()) return false;
-
-  const iframe = $("iframePlayer");
-  if(!iframe || iframe.style.display !== "block") return false;
-
-  if(!YT_SOUND_URL || !ytIsMuted) return false;
-
-  // marcamos como "hubo interacción"
-  ytSoundUnlocked = true;
-
-  // recarga con sonido
-  iframe.src = YT_SOUND_URL;
-  ytIsMuted = false;
-  YT_SOUND_URL = null;
-
-  // para que el overlay no quede “tapando” controles cuando reaparece HUD (CSS lo maneja)
-  showHudAndArmTimer();
-  return true;
 }
 
 /* History back (player) */
@@ -245,7 +187,7 @@ function openPlayer(){
   pushPlayerState();
   requestFullscreen(player);
 
-  showHudAndArmTimer();
+  showHudAndArmTimer(true);
   setTimeout(() => $("btnBack")?.focus(), 80);
 }
 
@@ -270,16 +212,52 @@ function closePlayer(popHistory = true){
   setTimeout(() => (lastFocusMain || document.querySelector(".card"))?.focus(), 80);
 }
 
+/* ============ TYPES ============ */
+
+function extractYouTubeId(urlOrId){
+  if(!urlOrId) return null;
+
+  // id directo
+  if(/^[a-zA-Z0-9_-]{11}$/.test(urlOrId)) return urlOrId;
+
+  try{
+    const u = new URL(urlOrId);
+
+    if(u.hostname.includes("youtube.com") && u.pathname === "/watch"){
+      return u.searchParams.get("v");
+    }
+
+    if(u.hostname.includes("youtube.com") && u.pathname.startsWith("/live/")){
+      return u.pathname.split("/live/")[1]?.split(/[?/]/)[0] || null;
+    }
+
+    if(u.hostname === "youtu.be"){
+      return u.pathname.replace("/", "").split(/[?/]/)[0] || null;
+    }
+  }catch{}
+
+  return null;
+}
+
+function youtubeEmbedUrl(videoId, muted){
+  // Nota: “mute=1” permite autoplay en TV WebView
+  // Luego, con una interacción, recargamos con mute=0
+  const qs = `autoplay=1&mute=${muted ? 1 : 0}&controls=0&rel=0&modestbranding=1&fs=1&playsinline=1`;
+  return `https://www.youtube-nocookie.com/embed/${videoId}?${qs}`;
+}
+
 function normalizeType(item){
   const t = (item.type || "").toLowerCase();
   if(t) return t;
+
   const u = String(item.url || "");
   if(u.includes(".m3u8")) return "hls";
-  if(/youtube\.com|youtu\.be/i.test(u) || /^[a-zA-Z0-9_-]{11}$/.test(u)) return "youtube";
+  if(extractYouTubeId(u)) return "youtube";
   return "web";
 }
 
-/* PLAY */
+/* ============ PLAY ============ */
+
 function playChannelByIndex(idx){
   if(!PLAYLIST.length) return;
 
@@ -288,80 +266,75 @@ function playChannelByIndex(idx){
   currentIndex = idx;
 
   const ch = PLAYLIST[currentIndex];
-  setNowPlaying(`${ch.name || "Canal"}  (${currentIndex+1}/${PLAYLIST.length})`);
+  setNowPlaying(`${ch.name || "Canal"} (${currentIndex+1}/${PLAYLIST.length})`);
 
   stopPlayers();
+  openPlayer();
 
   const type = normalizeType(ch);
 
-  // =========================
-  // WEB / EMBED (Pluto, Plex, etc)
-  // =========================
+  // WEB dentro del player -> HUD/back siempre disponible
   if(type === "web"){
-    openPlayer();
-
     const iframe = $("iframePlayer");
+    iframe.allow = "autoplay; fullscreen; encrypted-media";
+    iframe.referrerPolicy = "no-referrer-when-downgrade";
     iframe.src = ch.url;
     iframe.style.display = "block";
 
-    showHudAndArmTimer();
+    // No autohide en web
+    showHudAndArmTimer(true);
     setTimeout(() => $("btnBack")?.focus(), 120);
     return;
   }
 
-  openPlayer();
-
-  // =========================
-  // YOUTUBE
-  // =========================
   if(type === "youtube"){
-    const iframe = $("iframePlayer");
-
-    const embedMuted = youtubeToEmbed(ch.url, true);
-    const embedSound = youtubeToEmbed(ch.url, false);
-
-    if(!embedMuted || !embedSound){
+    const videoId = extractYouTubeId(ch.url);
+    if(!videoId){
+      // fallback
+      const iframe = $("iframePlayer");
       iframe.src = ch.url;
       iframe.style.display = "block";
+      showHudAndArmTimer(true);
       return;
     }
 
-    const firstUrl = ytSoundUnlocked ? embedSound : embedMuted;
+    ytPendingVideoId = videoId;
 
-    iframe.src = firstUrl;
+    const iframe = $("iframePlayer");
+    iframe.allow = "autoplay; fullscreen; encrypted-media";
+    iframe.referrerPolicy = "origin";
+
+    // 1) arrancamos muteado para asegurar autoplay
+    iframe.src = youtubeEmbedUrl(videoId, true);
     iframe.style.display = "block";
 
-    YT_SOUND_URL = embedSound;
-    ytIsMuted = !ytSoundUnlocked;
-
-    showHudAndArmTimer();
+    // En youtube sí dejamos autohide
+    showHudAndArmTimer(false);
     setTimeout(() => $("btnBack")?.focus(), 120);
     return;
   }
 
-  // =========================
-  // HLS (.m3u8)
-  // =========================
   if(type === "hls"){
-    const url = ch.url;
     const video = $("videoPlayer");
     video.style.display = "block";
 
+    // HLS nativo (Safari / algunos TV)
     if(video.canPlayType("application/vnd.apple.mpegurl")){
-      video.src = url;
+      video.src = ch.url;
       video.play().catch(()=>{});
-      showHudAndArmTimer();
+      showHudAndArmTimer(true);
       setTimeout(() => $("btnBack")?.focus(), 120);
       return;
     }
 
+    // HLS.js
     if(window.Hls && Hls.isSupported()){
-      hls = new Hls({ lowLatencyMode: true });
-      hls.loadSource(url);
+      hls = new Hls();
+      hls.loadSource(ch.url);
       hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         video.play().catch(()=>{});
-        showHudAndArmTimer();
+        showHudAndArmTimer(true);
         setTimeout(() => $("btnBack")?.focus(), 120);
       });
       return;
@@ -369,12 +342,14 @@ function playChannelByIndex(idx){
 
     alert("Este dispositivo/navegador no soporta HLS (.m3u8).");
     closePlayer(true);
+    return;
   }
 }
 
-
 function nextChannel(){ playChannelByIndex(currentIndex + 1); }
 function prevChannel(){ playChannelByIndex(currentIndex - 1); }
+
+/* ============ GRID INSIDE PLAYER ============ */
 
 function showGrid(){
   $("playerGrid").hidden = false;
@@ -395,60 +370,58 @@ function showGrid(){
     }));
   });
 
-  showHudAndArmTimer();
+  showHudAndArmTimer(true);
   setTimeout(() => (grid.querySelector(".card") || $("btnCloseGrid"))?.focus(), 80);
 }
 
 function hideGrid(){
   if($("playerGrid")) $("playerGrid").hidden = true;
 
-  showHudAndArmTimer();
+  showHudAndArmTimer(true);
   setTimeout(() => $("btnBack")?.focus(), 50);
+}
+
+/* ============ YT AUDIO UNLOCK ============ */
+function unlockYoutubeAudioNow(){
+  // recarga con mute=0 SOLO si estamos en youtube y tenemos id
+  const iframe = $("iframePlayer");
+  if(!iframe || iframe.style.display !== "block") return false;
+  if(!ytPendingVideoId) return false;
+
+  ytSoundUnlocked = true;
+  iframe.src = youtubeEmbedUrl(ytPendingVideoId, false);
+  return true;
 }
 
 /* HUD botones */
 $("btnBack")?.addEventListener("click", () => closePlayer(true));
-$("btnNext")?.addEventListener("click", () => { showHudAndArmTimer(); nextChannel(); });
-$("btnPrev")?.addEventListener("click", () => { showHudAndArmTimer(); prevChannel(); });
-$("btnGrid")?.addEventListener("click", () => { showHudAndArmTimer(); showGrid(); });
-$("btnCloseGrid")?.addEventListener("click", () => { showHudAndArmTimer(); hideGrid(); });
+$("btnNext")?.addEventListener("click", () => { showHudAndArmTimer(true); nextChannel(); });
+$("btnPrev")?.addEventListener("click", () => { showHudAndArmTimer(true); prevChannel(); });
+$("btnGrid")?.addEventListener("click", () => { showHudAndArmTimer(true); showGrid(); });
+$("btnCloseGrid")?.addEventListener("click", () => { showHudAndArmTimer(true); hideGrid(); });
 
-/**
- * Overlay click/touch:
- * - siempre re-muestra HUD
- * - y además intenta ACTIVAR AUDIO de YouTube (recargando con mute=0)
- */
+/* Tap overlay: muestra HUD y desbloquea audio */
 $("playerTap")?.addEventListener("pointerdown", (e) => {
   if(!isPlayerOpen()) return;
   e.preventDefault();
-
-  // IMPORTANTE: esto es una interacción del usuario -> momento ideal para habilitar audio
-  // Primero intentamos desbloquear audio, luego mostramos HUD
-  tryUnlockYoutubeAudio();
-  showHudAndArmTimer();
+  unlockYoutubeAudioNow();
+  showHudAndArmTimer(true);
 }, { passive:false });
 
-/* Back a HOME en vista categoría */
-$("btnBackToHome")?.addEventListener("click", () => {
-  setCatToUrl("");
-  renderByRoute();
-});
-
-/* Reaparecer HUD ante interacción (HLS/PC/teléfono) */
+/* Reaparecer HUD ante interacción */
 ["pointermove","wheel"].forEach(ev => {
   document.addEventListener(ev, () => {
-    if(isPlayerOpen() && !isGridOpen()) showHudAndArmTimer();
+    if(isPlayerOpen() && !isGridOpen()) showHudAndArmTimer(true);
   }, { passive:true });
 });
 
-// Para video nativo / HLS (el iframe puede no propagar)
 document.addEventListener("pointerdown", () => {
-  if(isPlayerOpen() && !isGridOpen()) showHudAndArmTimer();
+  if(isPlayerOpen() && !isGridOpen()) showHudAndArmTimer(true);
 }, { passive:true });
 
 /* Key handling TV */
 document.addEventListener("keydown", (e) => {
-  if(isPlayerOpen() && !isGridOpen()) showHudAndArmTimer();
+  if(isPlayerOpen() && !isGridOpen()) showHudAndArmTimer(true);
 
   // Back desde vista categoría (sin player)
   if(!isPlayerOpen() && isCategoryOpen()){
@@ -490,49 +463,37 @@ document.addEventListener("keydown", (e) => {
     key === "ChannelDown" || key === "TVChannelDown" ||
     key === "MediaTrackPrevious" || key === "MediaPreviousTrack" || key === "Prev";
 
-  if(isChanUp){
-    e.preventDefault();
-    nextChannel();
-    return;
-  }
-  if(isChanDown){
-    e.preventDefault();
-    prevChannel();
-    return;
-  }
+  if(isChanUp){ e.preventDefault(); nextChannel(); return; }
+  if(isChanDown){ e.preventDefault(); prevChannel(); return; }
 
-  // Enter/OK:
-  // - si hay iframe YouTube muteado, lo usamos como “Activar audio”
-  // - si no, alterna HUD
+  // Enter: desbloquea audio en YouTube y/o muestra HUD
   if(key === "Enter"){
+    e.preventDefault();
+
+    // si hay foco en botón/tarjeta, clic
     const a = document.activeElement;
     if(a && typeof a.click === "function"){
-      e.preventDefault();
       a.click();
       return;
     }
 
-    e.preventDefault();
+    // desbloqueo audio youtube (recarga con mute=0)
+    unlockYoutubeAudioNow();
 
-    // Intentar activar audio YouTube primero
-    const unlocked = tryUnlockYoutubeAudio();
-    if(unlocked){
-      showHudAndArmTimer();
-      return;
-    }
-
-    $("player").classList.toggle("hideHud");
-    if(!$("player").classList.contains("hideHud")) showHudAndArmTimer();
+    $("player").classList.remove("hideHud");
+    showHudAndArmTimer(true);
     return;
   }
 }, true);
 
-/* Helpers de datos */
+/* ============ DATA HELPERS ============ */
+
 function findCategoryById(catId){
   return (CFG?.categories || []).find(c => c.id === catId) || null;
 }
 
 function buildPlaylistFromCategory(cat){
+  // IMPORTANTE: solo youtube/hls van a la playlist (web no)
   const list = [];
   (cat?.items || []).forEach(item => {
     const type = normalizeType(item);
@@ -543,7 +504,8 @@ function buildPlaylistFromCategory(cat){
   return list;
 }
 
-/* Render */
+/* ============ RENDER ============ */
+
 function renderShortcuts(){
   const shortcutsEl = $("shortcuts");
   if(!shortcutsEl) return;
@@ -600,7 +562,6 @@ function renderCategoryView(catId){
   $("homeCategoriesBlock").hidden = true;
 
   $("categoryView").hidden = false;
-
   $("categoryTitle").textContent = cat?.name || "Categoría";
 
   const grid = $("categoryGrid");
@@ -631,9 +592,18 @@ function renderCategoryView(catId){
       tag: (type === "web") ? "Web" : (type.toUpperCase()),
       onClick: () => {
         if(type === "web"){
-          window.open(item.url, "_blank", "noopener");
+          // web: dentro del player con HUD/back
+          openPlayer();
+          stopPlayers();
+          const iframe = $("iframePlayer");
+          iframe.allow = "autoplay; fullscreen; encrypted-media";
+          iframe.src = item.url;
+          iframe.style.display = "block";
+          setNowPlaying(item.name || "Web");
+          showHudAndArmTimer(true);
           return;
         }
+
         const idx = PLAYLIST.findIndex(x => x.url === item.url && x.name === item.name);
         if(idx >= 0) playChannelByIndex(idx);
       }
@@ -650,6 +620,7 @@ function renderHome(){
   $("homeCategoriesBlock").hidden = false;
   $("categoryView").hidden = true;
 
+  renderShortcuts();
   renderHomeCategories();
 
   setTimeout(() => {
@@ -664,14 +635,18 @@ function renderByRoute(){
   else renderHome();
 }
 
+/* Back a HOME en vista categoría */
+$("btnBackToHome")?.addEventListener("click", () => {
+  setCatToUrl("");
+  renderByRoute();
+});
+
 /* Load config */
-fetch("config/channels.json?v=5")
+fetch("config/channels.json?v=10")
   .then(r => r.json())
   .then(cfg => {
     CFG = cfg;
     setBrand(cfg.brand);
-
-    renderShortcuts();
     renderByRoute();
   })
   .catch(err => {
