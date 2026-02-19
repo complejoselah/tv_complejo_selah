@@ -3,9 +3,17 @@
 :root{
   --accent:#F5C542;
   --bg: url("selah_bg.jpg");
+
+  /* lo setea app.js dinámicamente */
+  --topbarH: 0px;
 }
 
 html, body{ height:100%; }
+
+/* evita que el focus “se vaya” debajo del header sticky */
+html{
+  scroll-padding-top: calc(var(--topbarH) + 16px);
+}
 
 body{
   font-family: Arial, sans-serif;
@@ -98,6 +106,13 @@ h2{
   gap: 22px;
 }
 
+/* En pantallas grandes, forzamos 4 columnas (PC y TV) */
+@media (min-width: 1200px){
+  .grid{
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 /* Cards */
 .card{
   background: rgba(255,255,255,0.08);
@@ -107,7 +122,10 @@ h2{
   cursor:pointer;
   transition: transform .12s ease, background .12s ease, border-color .12s ease, box-shadow .12s ease;
   outline: none;
-  will-change: transform;
+
+  /* mejora rendimiento en TV al scrollear/listas largas (si el navegador lo soporta) */
+  content-visibility: auto;
+  contain-intrinsic-size: 360px 240px;
 }
 
 .card:hover{
@@ -124,6 +142,11 @@ h2{
   background: rgba(255,255,255,0.12);
   position: relative;
   z-index: 5;
+}
+
+/* para que al navegar con control remoto, el card no quede tapado por el header */
+.card{
+  scroll-margin-top: calc(var(--topbarH) + 16px);
 }
 
 .card img{
@@ -216,8 +239,6 @@ h2{
   padding: 12px;
   background: linear-gradient(to bottom, rgba(0,0,0,.78), rgba(0,0,0,0));
   z-index:10001;
-
-  /* transición para ocultar “limpio” */
   transition: opacity .20s ease, transform .20s ease;
 }
 
@@ -309,21 +330,43 @@ h2{
 
   .btnBackHome{ padding: 10px 14px; font-size: 14px; }
 }
-/* Overlay: SOLO captura toques cuando el HUD está oculto.
-   Si el HUD está visible, deja pasar el click/touch al iframe (para Play/Pause de YouTube). */
+
+/* Overlay: SOLO captura toques cuando el HUD está oculto. */
 #playerTap{
   position:absolute;
   inset:0;
-  z-index:10000; /* debajo de .hud (10001) y debajo de playerGrid (10002) */
+  z-index:10000;
   background: transparent;
   display:none;
   cursor: pointer;
   touch-action: manipulation;
-  pointer-events: none; /* default: NO bloquear el iframe */
+  pointer-events: none;
 }
 #player.show #playerTap{ display:block; }
+#player.hideHud #playerTap{ pointer-events: auto; }
 
-/* solo cuando ocultás HUD, el overlay se activa para poder “traer de vuelta” los controles */
-#player.hideHud #playerTap{
-  pointer-events: auto;
+/* ====== OPTIMIZACIONES ESPECÍFICAS PARA TV (Android TV / Onn / hover:none) ====== */
+@media (hover: none), (pointer: coarse){
+  /* El "fixed background" suele dar tirones en TVs */
+  body{ background-attachment: scroll; }
+
+  /* Menos costo gráfico */
+  .topbar{ backdrop-filter: none; }
+  .topbar{ padding: 12px 0 10px; }
+  .topLogo{
+    width: min(560px, 72vw);
+    max-height: 140px;
+    filter: none;
+  }
+
+  .grid{ gap: 16px; }
+
+  /* Hover no existe en TV: evitamos recalculos */
+  .card:hover{ transform:none; }
+
+  /* Focus más suave (menos reflow) */
+  .card:focus{
+    transform: scale(1.03);
+    box-shadow: 0 0 18px rgba(255,255,255,.28);
+  }
 }
