@@ -11,7 +11,7 @@
   <link rel="shortcut icon" href="favicon_32x32.ico" />
 
   <meta name="theme-color" content="#0b0f12" />
-  <link rel="stylesheet" href="assets/style.css?v=8" />
+  <link rel="stylesheet" href="assets/style.css?v=9" />
 
 </head>
 
@@ -69,9 +69,12 @@
     </div>
 
     <div class="hudRight">
-      <button id="btnGrid" class="hudBtn" type="button" aria-label="Abrir grilla">⧉ Grilla</button>
-      <button id="btnPrev" class="hudBtn" type="button" aria-label="Canal anterior">⟵ Anterior</button>
-      <button id="btnNext" class="hudBtn" type="button" aria-label="Canal siguiente">Siguiente ⟶</button>
+
+      <!-- dentro de <div class="hudRight"> ... -->
+<button id="btnSound" class="hudBtn" type="button" aria-label="Activar sonido">Activar sonido</button>
+<button id="btnGrid" class="hudBtn" type="button" aria-label="Abrir grilla">⧉ Grilla</button>
+<button id="btnPrev" class="hudBtn" type="button" aria-label="Canal anterior">⟵ Anterior</button>
+<button id="btnNext" class="hudBtn" type="button" aria-label="Canal siguiente">Siguiente ⟶</button>
     </div>
   </div>
 
@@ -107,6 +110,6 @@
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
-  <script src="assets/app.js?v=10"></script>
+  <script src="assets/app.js?v=13"></script>
 </body>
 </html>
