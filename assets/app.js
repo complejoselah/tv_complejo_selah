@@ -10,7 +10,6 @@ const $ = (id) => document.getElementById(id);
     document.documentElement.style.setProperty("--topbarH", tb.offsetHeight + "px");
   }
 
-  // marca TV (por si querés usarlo después)
   try{
     const isTv = window.matchMedia && window.matchMedia("(hover: none)").matches;
     if(isTv) document.documentElement.classList.add("isTv");
@@ -36,9 +35,9 @@ let hudTimer = null;
 let HUD_HIDE_MS = 6500;
 
 // --- YouTube unlock ---
-let ytSoundUnlocked = false;     // queda “true” luego de 1 gesto válido
-let ytPendingVideoId = null;     // id del youtube actual
-let isCurrentYouTube = false;    // estamos viendo youtube?
+let ytSoundUnlocked = false;
+let ytPendingVideoId = null;
+let isCurrentYouTube = false;
 
 function toAbsUrl(path){
   if(!path) return "";
@@ -79,9 +78,7 @@ function setSoundButtonState(){
   const b = $("btnSound");
   if(!b) return;
 
-  // Solo se ve en YouTube (en Web/HLS no tiene sentido)
   b.style.display = isCurrentYouTube ? "inline-block" : "none";
-
   if(!isCurrentYouTube) return;
 
   b.textContent = ytSoundUnlocked ? "🔊 Sonido OK" : "🔊 Activar sonido";
@@ -216,7 +213,9 @@ function openPlayer(){
   pushPlayerState();
   requestFullscreen(player);
 
-  showHudAndArmTimer(true);
+  // ✅ arranca visible, pero se oculta solo
+  showHudAndArmTimer(false);
+
   setTimeout(() => $("btnBack")?.focus(), 80);
 }
 
@@ -321,7 +320,7 @@ function playChannelByIndex(idx){
     isCurrentYouTube = false;
     setSoundButtonState();
 
-    showHudAndArmTimer(true);
+    showHudAndArmTimer(false);
     setTimeout(() => $("btnBack")?.focus(), 120);
     return;
   }
@@ -334,7 +333,7 @@ function playChannelByIndex(idx){
       iframe.style.display = "block";
       isCurrentYouTube = false;
       setSoundButtonState();
-      showHudAndArmTimer(true);
+      showHudAndArmTimer(false);
       return;
     }
 
@@ -345,20 +344,20 @@ function playChannelByIndex(idx){
     iframe.allow = "autoplay; fullscreen; encrypted-media";
     iframe.referrerPolicy = "origin";
 
-    // ✅ Siempre mostramos el botón en YouTube
     setSoundButtonState();
 
-    // Si ya desbloqueaste en esta sesión -> arrancá con audio
     const startMuted = !ytSoundUnlocked;
     iframe.src = youtubeEmbedUrl(videoId, startMuted);
     iframe.style.display = "block";
 
+    // ✅ también auto-oculta en YouTube
     showHudAndArmTimer(false);
+
     setTimeout(() => {
-      // si está muteado, enfocá el botón para que sea “obvio” en TV/PC
       if(!ytSoundUnlocked) $("btnSound")?.focus();
       else $("btnBack")?.focus();
     }, 140);
+
     return;
   }
 
@@ -372,7 +371,7 @@ function playChannelByIndex(idx){
     if(video.canPlayType("application/vnd.apple.mpegurl")){
       video.src = ch.url;
       video.play().catch(()=>{});
-      showHudAndArmTimer(true);
+      showHudAndArmTimer(false);
       setTimeout(() => $("btnBack")?.focus(), 120);
       return;
     }
@@ -383,7 +382,7 @@ function playChannelByIndex(idx){
       hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         video.play().catch(()=>{});
-        showHudAndArmTimer(true);
+        showHudAndArmTimer(false);
         setTimeout(() => $("btnBack")?.focus(), 120);
       });
       return;
@@ -423,34 +422,32 @@ function showGrid(){
 
 function hideGrid(){
   if($("playerGrid")) $("playerGrid").hidden = true;
-  showHudAndArmTimer(true);
+  showHudAndArmTimer(false);
   setTimeout(() => $("btnBack")?.focus(), 50);
 }
 
 /* HUD botones */
 $("btnBack")?.addEventListener("click", () => closePlayer(true));
-$("btnNext")?.addEventListener("click", () => { showHudAndArmTimer(true); nextChannel(); });
-$("btnPrev")?.addEventListener("click", () => { showHudAndArmTimer(true); prevChannel(); });
+$("btnNext")?.addEventListener("click", () => { showHudAndArmTimer(false); nextChannel(); });
+$("btnPrev")?.addEventListener("click", () => { showHudAndArmTimer(false); prevChannel(); });
 $("btnGrid")?.addEventListener("click", () => { showHudAndArmTimer(true); showGrid(); });
-$("btnCloseGrid")?.addEventListener("click", () => { showHudAndArmTimer(true); hideGrid(); });
+$("btnCloseGrid")?.addEventListener("click", () => { showHudAndArmTimer(false); hideGrid(); });
 
-// ✅ Botón de sonido: SIEMPRE disponible en YouTube
 $("btnSound")?.addEventListener("click", () => {
   unlockYoutubeAudioNow();
-  showHudAndArmTimer(true);
+  showHudAndArmTimer(false);
 });
 
-// Tap overlay: teléfono/mouse
 $("playerTap")?.addEventListener("pointerdown", (e) => {
   if(!isPlayerOpen()) return;
   e.preventDefault();
   unlockYoutubeAudioNow();
-  showHudAndArmTimer(true);
+  showHudAndArmTimer(false);
 }, { passive:false });
 
 /* Key handling TV */
 document.addEventListener("keydown", (e) => {
-  if(isPlayerOpen() && !isGridOpen()) showHudAndArmTimer(true);
+  if(isPlayerOpen() && !isGridOpen()) showHudAndArmTimer(false);
 
   if(!isPlayerOpen() && isCategoryOpen()){
     const key = e.key;
@@ -480,7 +477,6 @@ document.addEventListener("keydown", (e) => {
   }
 
   if(key === "Enter"){
-    // si hay foco en un botón, lo clickea
     const a = document.activeElement;
     if(a && typeof a.click === "function"){
       e.preventDefault();
@@ -488,16 +484,15 @@ document.addEventListener("keydown", (e) => {
       return;
     }
 
-    // si NO hay foco, Enter actúa como “activar sonido” cuando es YouTube
     e.preventDefault();
     if(isCurrentYouTube && !ytSoundUnlocked){
       unlockYoutubeAudioNow();
-      showHudAndArmTimer(true);
+      showHudAndArmTimer(false);
       return;
     }
 
     $("player").classList.remove("hideHud");
-    showHudAndArmTimer(true);
+    showHudAndArmTimer(false);
   }
 }, true);
 
@@ -608,7 +603,7 @@ function renderCategoryView(catId){
           iframe.src = item.url;
           iframe.style.display = "block";
           setNowPlaying(item.name || "Web");
-          showHudAndArmTimer(true);
+          showHudAndArmTimer(false);
           return;
         }
 
