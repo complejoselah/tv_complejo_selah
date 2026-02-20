@@ -144,10 +144,10 @@
       "id": "deportes-canales",
       "name": "Canales Deportivos",
       "items": [
-        { "name": "TyC Sports", "icon": "assets/tycsports.png", "url":"https://qbk4f.envivoslatam.org/tycsports/tracks-v1a1/mono.m3u8?ip=181.44.130.47&token=2a0eb861eab99835ed007bf5f17ea5f2150166ef-de-1771401580-1771347580", "type": "hls" },
-        { "name": "TNT Sport", "icon": "assets/tntsports.jpeg", "url": "https://vg7ie.envivoslatam.org/tntsports/tracks-v1a1/mono.m3u8?ip=181.44.130.47&token=3a86676bbfd24a9ac318b13047cc9ee53c4aa925-f6-1771401710-1771347710", "type": "hls" },
-        { "name": "ESPN", "icon": "assets/espn.jpeg", "url": "https://mze7u.envivoslatam.org/espnpremium/tracks-v1a1/mono.m3u8?ip=181.44.130.47&token=f2bfb2380dce5bdeb5c2723849a6390b1363054a-79-1771402078-1771348078", "type": "hls" },
-        { "name": "Directv Sports", "icon": "assets/directv.png", "url": "https://qbk4f.envivoslatam.org/dsports/tracks-v1a1/mono.m3u8?ip=181.44.130.47&token=9d5d50428bd1840e80e3aa9b86df5a7ab705878e-65-1771402023-1771348023", "type": "hls" }
+        { "name": "TyC Sports", "icon": "assets/tycsports.png", "url":"https://kh5vy.envivoslatam.org/tycsports/tracks-v1a1/mono.m3u8?ip=181.44.130.47&token=3624f2bc8fd164a83389f2b5d6c39ff41bd93be4-89-1771672751-1771618751", "type": "hls" },
+        { "name": "TNT Sport", "icon": "assets/tntsports.jpeg", "url": "https://qbk4f.envivoslatam.org/tntsports/tracks-v1a1/mono.m3u8?ip=181.44.130.47&token=8c4e9b66355265ea1426ea5ddcbf36bf76b256de-f8-1771672921-1771618921", "type": "hls" },
+        { "name": "ESPN", "icon": "assets/espn.jpeg", "url": "https://pvtn5y.envivoslatam.org/espnpremium/tracks-v1a1/mono.m3u8?ip=181.44.130.47&token=f4ff053e0b8e519ff38141f36ed1a49637537cd6-11-1771672846-1771618846", "type": "hls" },
+        { "name": "Directv Sports", "icon": "assets/directv.png", "url": "https://smjt9q.envivoslatam.org/dsports/index.m3u8?token=24c760e18a510d44986299464d204db98b3337a3-65-1771673019-1771619019&ip=181.44.130.47", "type": "hls" }
       ]
     }  
   ]
