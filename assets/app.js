@@ -213,9 +213,7 @@ function openPlayer(){
   pushPlayerState();
   requestFullscreen(player);
 
-  // ✅ arranca visible, pero se oculta solo
   showHudAndArmTimer(false);
-
   setTimeout(() => $("btnBack")?.focus(), 80);
 }
 
@@ -350,7 +348,6 @@ function playChannelByIndex(idx){
     iframe.src = youtubeEmbedUrl(videoId, startMuted);
     iframe.style.display = "block";
 
-    // ✅ también auto-oculta en YouTube
     showHudAndArmTimer(false);
 
     setTimeout(() => {
@@ -445,10 +442,29 @@ $("playerTap")?.addEventListener("pointerdown", (e) => {
   showHudAndArmTimer(false);
 }, { passive:false });
 
+/* ========= CH UP / DOWN (control remoto) =========
+   Android TV suele enviar keyCode 166/167 o e.key "ChannelUp"/"ChannelDown".
+   También soportamos PageUp/PageDown por compatibilidad.
+*/
+function isChUp(e){
+  const k = (e.key || "");
+  const c = (e.code || "");
+  const kc = e.keyCode || e.which || 0;
+  return k === "ChannelUp" || k === "PageUp" || c === "ChannelUp" || kc === 166;
+}
+function isChDown(e){
+  const k = (e.key || "");
+  const c = (e.code || "");
+  const kc = e.keyCode || e.which || 0;
+  return k === "ChannelDown" || k === "PageDown" || c === "ChannelDown" || kc === 167;
+}
+
 /* Key handling TV */
 document.addEventListener("keydown", (e) => {
+  // ✅ Si está el player abierto, cualquier tecla re-muestra HUD (y rearma timer)
   if(isPlayerOpen() && !isGridOpen()) showHudAndArmTimer(false);
 
+  // ✅ Volver desde vista categoría (cuando NO está el player)
   if(!isPlayerOpen() && isCategoryOpen()){
     const key = e.key;
     const isBack =
@@ -462,7 +478,18 @@ document.addEventListener("keydown", (e) => {
     }
   }
 
+  // Si no está el player, no interceptamos CH ▲/▼ (así no rompemos navegación del sistema)
   if(!isPlayerOpen()) return;
+
+  // ✅ CH ▲/▼: cambiar canal SIEMPRE que el player esté abierto (y no esté la grilla encima)
+  if(!isGridOpen() && (isChUp(e) || isChDown(e))){
+    e.preventDefault();
+    e.stopPropagation();
+    showHudAndArmTimer(false);
+    if(isChUp(e)) nextChannel();
+    else prevChannel();
+    return;
+  }
 
   const key = e.key;
   const isBack =
