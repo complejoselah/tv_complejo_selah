@@ -144,10 +144,10 @@
       "id": "deportes-canales",
       "name": "Canales Deportivos",
       "items": [
-        { "name": "TyC Sports", "icon": "assets/tycsports.png", "url":"https://qbk4f.envivoslatam.org/tycsports/tracks-v1a1/mono.m3u8?ip=181.44.130.47&token=5fb6c6e5a8e0b0bc99031d98f1a522111a4aed64-38-1771757520-1771703520", "type": "hls" },
-        { "name": "TNT Sport", "icon": "assets/tntsports.jpeg", "url": "https://qbk4f.envivoslatam.org/tntsports/tracks-v1a1/mono.m3u8?ip=181.44.130.47&token=4edc1f4f80b2ccd8524ddf52b64921053b294a8e-30-1771757663-1771703663", "type": "hls" },
-        { "name": "ESPN", "icon": "assets/espn.jpeg", "url": "https://xky9q.envivoslatam.org/espnpremium/tracks-v1a1/mono.m3u8?ip=181.44.130.47&token=08ac83b0ce0b00a9b71de639b48b495f8547fdb8-13-1771757709-1771703709", "type": "hls" },
-        { "name": "Directv Sports", "icon": "assets/directv.png", "url": "https://iaw5b.envivoslatam.org/dsports/tracks-v1a1/mono.m3u8?ip=181.44.130.47&token=363348ad0145fbb4e0b0d481d79071d1f7677383-37-1771757604-1771703604", "type": "hls" }
+        { "name": "TyC Sports", "icon": "assets/tycsports.png", "url":"https://pvtn5y.envivoslatam.org/tycsports/tracks-v1a1/mono.m3u8?ip=181.44.130.47&token=c945f601021714ea365e439e8acc23f485027f0c-2d-1771814048-1771760048", "type": "hls" },
+        { "name": "TNT Sport", "icon": "assets/tntsports.jpeg", "url": "https://rci1w.envivoslatam.org/tntsports/tracks-v1a1/mono.m3u8?ip=181.44.130.47&token=9089eca44b9b230da777b379286c71332618d17f-02-1771814172-1771760172", "type": "hls" },
+        { "name": "ESPN", "icon": "assets/espn.jpeg", "url": "https://wf6kt.envivoslatam.org/espnpremium/tracks-v1a1/mono.m3u8?ip=181.44.130.47&token=27c276d8c84d47a8549d2e820bc31a2ca9c94ac9-26-1771814275-1771760275", "type": "hls" },
+        { "name": "Directv Sports", "icon": "assets/directv.png", "url": "https://iaw5b.envivoslatam.org/dsports/tracks-v1a1/mono.m3u8?ip=181.44.130.47&token=bda684b4edef1b45b427166ce20b38151a1db0af-66-1771814115-1771760115", "type": "hls" }
       ]
     }  
   ]
