@@ -44,8 +44,27 @@ let currentSeriesCatId = "";   // catId desde donde venimos (ej: "series-legales
 
 function toAbsUrl(path){
   if(!path) return "";
-  if(/^https?:\/\//i.test(path) || path.startsWith("/")) return path;
-  return new URL(path, window.location.href).href;
+
+  // Si ya es URL absoluta
+  if(/^https?:\/\//i.test(path)) return path;
+
+  // GitHub Pages base (sirve también en local)
+  const base = new URL(document.baseURI);
+
+  // Normaliza: si viene "/assets/..." le saca el leading slash
+  if(path.startsWith("/")) path = path.slice(1);
+
+  // Si viene SOLO el nombre del archivo (ej: "a-123.webp"), asumimos cache_icons
+  if(!path.includes("/")){
+    path = `assets/cache_icons/${path}`;
+  }
+
+  // Si viene "cache_icons/..." sin "assets/"
+  if(path.startsWith("cache_icons/")){
+    path = `assets/${path}`;
+  }
+
+  return new URL(path, base).href;
 }
 
 function setBrand(brand){
@@ -99,48 +118,27 @@ function makeCard({title, desc, icon, tag, onClick}){
   card.className = "card";
   card.tabIndex = 0;
 
-  const safeTitle = (title ?? "").toString();
-  const safeDesc  = (desc ?? "").toString();
+  const safeTitle = title || "";
+  const safeDesc  = desc  || "";
 
-  let safeIcon = "assets/logo-header.png";
-  if(typeof icon === "string" && icon.trim() !== ""){
-    try{ safeIcon = toAbsUrl(icon.trim()); }catch{ safeIcon = "assets/logo-header.png"; }
-  }
+  // ✅ normaliza ruta (soporta icon URL absoluta y rutas relativas)
+  const iconSrc = toAbsUrl(icon) || toAbsUrl("assets/logo-header.png");
 
-  const img = document.createElement("img");
-  img.src = safeIcon;
-  img.alt = safeTitle;
-  img.loading = "lazy";
-  img.decoding = "async";
-  img.referrerPolicy = "no-referrer";
-  img.onerror = function(){
-    this.onerror = null;
-    this.src = "assets/logo-header.png";
-  };
+  card.innerHTML = `
+    <img src="${iconSrc}" alt="${safeTitle}">
+    <div class="cardBody">
+      <h3>${safeTitle}</h3>
+      ${safeDesc ? `<p class="cardDesc">${safeDesc}</p>` : ``}
+      ${tag ? `<div class="badge">${tag}</div>` : ``}
+    </div>
+  `;
 
-  const body = document.createElement("div");
-  body.className = "cardBody";
-
-  const h3 = document.createElement("h3");
-  h3.textContent = safeTitle;
-  body.appendChild(h3);
-
-  if(safeDesc){
-    const p = document.createElement("p");
-    p.className = "cardDesc";
-    p.textContent = safeDesc;
-    body.appendChild(p);
-  }
-
-  if(tag){
-    const badge = document.createElement("div");
-    badge.className = "badge";
-    badge.textContent = tag;
-    body.appendChild(badge);
-  }
-
-  card.appendChild(img);
-  card.appendChild(body);
+  // ✅ fallback si la imagen falla
+  const img = card.querySelector("img");
+  img.addEventListener("error", () => {
+    img.onerror = null;
+    img.src = toAbsUrl("assets/logo-header.png");
+  });
 
   card.addEventListener("focus", () => {
     if(isPlayerOpen()){
@@ -150,11 +148,11 @@ function makeCard({title, desc, icon, tag, onClick}){
     }
   });
 
-  card.addEventListener("click", () => { if(typeof onClick === "function") onClick(); });
+  card.addEventListener("click", onClick);
   card.addEventListener("keydown", (e) => {
     if(e.key === "Enter" || e.key === " "){
       e.preventDefault();
-      if(typeof onClick === "function") onClick();
+      onClick();
     }
   });
 
