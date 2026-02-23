@@ -4,15 +4,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="Permissions-Policy" content="autoplay=(self)">
-
   <title>Selah TV</title>
 
   <link rel="icon" type="image/x-icon" href="favicon_32x32.ico" />
   <link rel="shortcut icon" href="favicon_32x32.ico" />
 
   <meta name="theme-color" content="#0b0f12" />
-  <link rel="stylesheet" href="assets/style.css?v=10" />
+  <link rel="stylesheet" href="assets/style.css?v=12" />
 
+  <!-- video.js -->
+  <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
+  <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/videojs-contrib-quality-levels@3.0.0/dist/videojs-contrib-quality-levels.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/videojs-http-streaming@3.5.0/dist/videojs-http-streaming.min.js"></script>
 </head>
 
 <body>
@@ -48,6 +52,16 @@
 
       <div class="grid" id="categoryGrid"></div>
     </section>
+
+    <!-- ✅ VISTA EPISODIOS (Series -> Episodios) -->
+    <section class="block" id="episodeView" hidden>
+      <div class="categoryHeader">
+        <button id="btnBackToSeries" class="btnBackHome" type="button" aria-label="Volver a series">⬅ Volver</button>
+        <h2 id="episodeTitle" class="categoryHeaderTitle">Episodios</h2>
+      </div>
+
+      <div class="grid" id="episodeGrid"></div>
+    </section>
   </main>
 
   <footer class="siteFooter">
@@ -59,57 +73,58 @@
   </footer>
 
   <!-- PLAYER -->
-<div id="player" aria-hidden="true">
-  <!-- HUD -->
-  <div id="playerHud" class="hud" role="toolbar" aria-label="Controles del reproductor">
-    <button id="btnBack" class="hudBtn" type="button" aria-label="Volver">⬅ Volver</button>
+  <div id="player" aria-hidden="true">
+    <!-- HUD -->
+    <div id="playerHud" class="hud" role="toolbar" aria-label="Controles del reproductor">
+      <button id="btnBack" class="hudBtn" type="button" aria-label="Volver">⬅ Volver</button>
 
-    <div class="hudCenter" aria-live="polite" aria-atomic="true">
-      <div id="nowPlaying" class="nowPlaying">Canal</div>
+      <div class="hudCenter" aria-live="polite" aria-atomic="true">
+        <div id="nowPlaying" class="nowPlaying">Canal</div>
+      </div>
+
+      <div class="hudRight">
+        <button id="btnSound" class="hudBtn" type="button" aria-label="Activar sonido">Activar sonido</button>
+        <button id="btnGrid" class="hudBtn" type="button" aria-label="Abrir grilla">⧉ Grilla</button>
+        <button id="btnPrev" class="hudBtn" type="button" aria-label="Canal anterior">⟵ Anterior</button>
+        <button id="btnNext" class="hudBtn" type="button" aria-label="Canal siguiente">Siguiente ⟶</button>
+      </div>
     </div>
 
-    <div class="hudRight">
+    <!-- IFRAME (web/youtube) -->
+    <iframe
+      id="iframePlayer"
+      frameborder="0"
+      allow="autoplay; fullscreen; encrypted-media"
+    ></iframe>
 
-      <!-- dentro de <div class="hudRight"> ... -->
-<button id="btnSound" class="hudBtn" type="button" aria-label="Activar sonido">Activar sonido</button>
-<button id="btnGrid" class="hudBtn" type="button" aria-label="Abrir grilla">⧉ Grilla</button>
-<button id="btnPrev" class="hudBtn" type="button" aria-label="Canal anterior">⟵ Anterior</button>
-<button id="btnNext" class="hudBtn" type="button" aria-label="Canal siguiente">Siguiente ⟶</button>
+    <!-- VIDEO.JS -->
+    <video
+      id="videoPlayer"
+      class="video-js vjs-default-skin"
+      controls
+      playsinline
+      preload="auto"
+    ></video>
+
+    <!-- overlay para tap/click -->
+    <div id="playerTap" aria-hidden="true" title="Mostrar controles"></div>
+
+    <!-- Grilla -->
+    <div id="playerGrid" class="playerGrid" hidden>
+      <div class="playerGridInner">
+        <h3>Canales</h3>
+        <div id="gridInsidePlayer" class="grid"></div>
+        <button id="btnCloseGrid" class="hudBtn" type="button" style="margin-top:12px;">
+          Cerrar
+        </button>
+      </div>
     </div>
   </div>
-
-  <!-- Player -->
-  
-  <iframe
-  id="iframePlayer"
-  frameborder="0"
-  allow="autoplay; fullscreen; encrypted-media"
-></iframe>
-
-
-
-  <video id="videoPlayer" playsinline autoplay controls></video>
-
-  <!-- NUEVO: overlay transparente para capturar click/touch y re-mostrar HUD (clave para YouTube iframe) -->
-  <div id="playerTap" aria-hidden="true" title="Mostrar controles"></div>
-
-  <!-- Grilla -->
-  <div id="playerGrid" class="playerGrid" hidden>
-    <div class="playerGridInner">
-      <h3>Canales</h3>
-      <div id="gridInsidePlayer" class="grid"></div>
-      <button id="btnCloseGrid" class="hudBtn" type="button" style="margin-top:12px;">
-        Cerrar
-      </button>
-    </div>
-  </div>
-</div>
-
 
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
-  <script src="assets/app.js?v=14"></script>
+
+  <script src="assets/app.js?v=17"></script>
 </body>
 </html>
