@@ -1,20 +1,17 @@
 const $ = (id) => document.getElementById(id);
 
-// ===== Ajuste dinámico: altura del header para que no pise "Volver" y el focus/scroll sea correcto =====
+/* ===== Ajuste dinámico topbar ===== */
 (function(){
   let t = null;
-
   function updateTopbarVar(){
     const tb = document.querySelector(".topbar");
     if(!tb) return;
     document.documentElement.style.setProperty("--topbarH", tb.offsetHeight + "px");
   }
-
   try{
     const isTv = window.matchMedia && window.matchMedia("(hover: none)").matches;
     if(isTv) document.documentElement.classList.add("isTv");
   }catch{}
-
   window.addEventListener("load", updateTopbarVar, { once:true });
   window.addEventListener("resize", () => {
     clearTimeout(t);
@@ -25,7 +22,6 @@ const $ = (id) => document.getElementById(id);
 let CFG = null;
 let PLAYLIST = [];
 let currentIndex = -1;
-let hls = null;
 
 let lastFocusMain = null;
 let lastFocusGrid = null;
@@ -34,10 +30,17 @@ let pushedPlayerState = false;
 let hudTimer = null;
 let HUD_HIDE_MS = 6500;
 
-// --- YouTube unlock ---
+/* --- YouTube unlock --- */
 let ytSoundUnlocked = false;
 let ytPendingVideoId = null;
 let isCurrentYouTube = false;
+
+/* --- video.js --- */
+let vjsPlayer = null;
+
+/* --- Series view state --- */
+let currentSeries = null;      // objeto serie seleccionado
+let currentSeriesCatId = "";   // catId desde donde venimos (ej: "series-legales")
 
 function toAbsUrl(path){
   if(!path) return "";
@@ -47,7 +50,6 @@ function toAbsUrl(path){
 
 function setBrand(brand){
   if(!brand) return;
-
   if(brand.accent) document.documentElement.style.setProperty("--accent", brand.accent);
   if(brand.background){
     const abs = toAbsUrl(brand.background);
@@ -61,47 +63,84 @@ function setBrand(brand){
 function isPlayerOpen(){ return $("player")?.classList.contains("show"); }
 function isGridOpen(){ return $("playerGrid") && !$("playerGrid").hidden; }
 function isCategoryOpen(){ return $("categoryView") && !$("categoryView").hidden; }
+function isEpisodeOpen(){ return $("episodeView") && !$("episodeView").hidden; }
 
 function getCatFromUrl(){
   const sp = new URLSearchParams(window.location.search);
   return sp.get("cat") || "";
 }
+function getSeriesFromUrl(){
+  const sp = new URLSearchParams(window.location.search);
+  return sp.get("series") || "";
+}
 
-function setCatToUrl(catId){
+function setRouteParams({catId, seriesId}){
   const url = new URL(window.location.href);
   if(catId) url.searchParams.set("cat", catId);
   else url.searchParams.delete("cat");
-  history.pushState({ selahCat: catId || null }, "", url.toString());
+  if(seriesId) url.searchParams.set("series", seriesId);
+  else url.searchParams.delete("series");
+  history.pushState({ selahCat: catId || null, selahSeries: seriesId || null }, "", url.toString());
 }
 
+/* ====== Botón sonido YouTube ====== */
 function setSoundButtonState(){
   const b = $("btnSound");
   if(!b) return;
-
   b.style.display = isCurrentYouTube ? "inline-block" : "none";
   if(!isCurrentYouTube) return;
-
   b.textContent = ytSoundUnlocked ? "🔊 Sonido OK" : "🔊 Activar sonido";
   b.setAttribute("aria-label", ytSoundUnlocked ? "Sonido habilitado" : "Activar sonido");
 }
 
+/* ====== Card robusta (acepta URL externa) ====== */
 function makeCard({title, desc, icon, tag, onClick}){
   const card = document.createElement("div");
   card.className = "card";
   card.tabIndex = 0;
 
-  const safeTitle = title || "";
-  const safeDesc  = desc  || "";
-  const safeIcon  = icon  || "";
+  const safeTitle = (title ?? "").toString();
+  const safeDesc  = (desc ?? "").toString();
 
-  card.innerHTML = `
-    <img src="${safeIcon}" alt="${safeTitle}">
-    <div class="cardBody">
-      <h3>${safeTitle}</h3>
-      ${safeDesc ? `<p class="cardDesc">${safeDesc}</p>` : ``}
-      ${tag ? `<div class="badge">${tag}</div>` : ``}
-    </div>
-  `;
+  let safeIcon = "assets/logo-header.png";
+  if(typeof icon === "string" && icon.trim() !== ""){
+    try{ safeIcon = toAbsUrl(icon.trim()); }catch{ safeIcon = "assets/logo-header.png"; }
+  }
+
+  const img = document.createElement("img");
+  img.src = safeIcon;
+  img.alt = safeTitle;
+  img.loading = "lazy";
+  img.decoding = "async";
+  img.referrerPolicy = "no-referrer";
+  img.onerror = function(){
+    this.onerror = null;
+    this.src = "assets/logo-header.png";
+  };
+
+  const body = document.createElement("div");
+  body.className = "cardBody";
+
+  const h3 = document.createElement("h3");
+  h3.textContent = safeTitle;
+  body.appendChild(h3);
+
+  if(safeDesc){
+    const p = document.createElement("p");
+    p.className = "cardDesc";
+    p.textContent = safeDesc;
+    body.appendChild(p);
+  }
+
+  if(tag){
+    const badge = document.createElement("div");
+    badge.className = "badge";
+    badge.textContent = tag;
+    body.appendChild(badge);
+  }
+
+  card.appendChild(img);
+  card.appendChild(body);
 
   card.addEventListener("focus", () => {
     if(isPlayerOpen()){
@@ -111,26 +150,57 @@ function makeCard({title, desc, icon, tag, onClick}){
     }
   });
 
-  card.addEventListener("click", onClick);
+  card.addEventListener("click", () => { if(typeof onClick === "function") onClick(); });
   card.addEventListener("keydown", (e) => {
     if(e.key === "Enter" || e.key === " "){
       e.preventDefault();
-      onClick();
+      if(typeof onClick === "function") onClick();
     }
   });
 
   return card;
 }
 
-/* ============ PLAYER HELPERS ============ */
+/* ============ VIDEO.JS INIT ============ */
+function ensureVideoJS(){
+  const el = $("videoPlayer");
+  if(!el) return null;
+  if(!window.videojs) return null;
+  if(vjsPlayer) return vjsPlayer;
 
+  vjsPlayer = window.videojs(el, {
+    controls: true,
+    autoplay: true,
+    preload: "auto",
+    playsinline: true,
+    fluid: true,
+    responsive: true,
+    html5: {
+      vhs: {
+        enableLowInitialPlaylist: true,
+        smoothQualityChange: true,
+        overrideNative: true
+      },
+      nativeAudioTracks: false,
+      nativeVideoTracks: false
+    }
+  });
+
+  vjsPlayer.on("error", () => {
+    const err = vjsPlayer.error();
+    console.warn("video.js error:", err);
+  });
+
+  return vjsPlayer;
+}
+
+/* ============ PLAYER HELPERS ============ */
 async function requestFullscreen(el){
   try{
     if(el.requestFullscreen) await el.requestFullscreen();
     else if(el.webkitRequestFullscreen) await el.webkitRequestFullscreen();
   }catch{}
 }
-
 function exitFullscreenSafe(){
   try{
     if(document.fullscreenElement) document.exitFullscreen();
@@ -145,18 +215,15 @@ function stopPlayers(){
     iframe.style.display = "none";
   }
 
+  if(vjsPlayer){
+    try{
+      vjsPlayer.pause();
+      vjsPlayer.src([]);
+      vjsPlayer.reset();
+    }catch{}
+  }
   const v = $("videoPlayer");
-  if(v){
-    try{ v.pause(); }catch{}
-    v.removeAttribute("src");
-    v.load();
-    v.style.display = "none";
-  }
-
-  if(hls){
-    try{ hls.destroy(); }catch{}
-    hls = null;
-  }
+  if(v) v.style.display = "none";
 
   ytPendingVideoId = null;
   isCurrentYouTube = false;
@@ -192,7 +259,6 @@ function pushPlayerState(){
     pushedPlayerState = true;
   }catch{}
 }
-
 window.addEventListener("popstate", () => {
   if(isPlayerOpen()){
     closePlayer(false);
@@ -212,7 +278,6 @@ function openPlayer(){
 
   pushPlayerState();
   requestFullscreen(player);
-
   showHudAndArmTimer(false);
   setTimeout(() => $("btnBack")?.focus(), 80);
 }
@@ -239,27 +304,17 @@ function closePlayer(popHistory = true){
 }
 
 /* ============ TYPES ============ */
-
 function extractYouTubeId(urlOrId){
   if(!urlOrId) return null;
   if(/^[a-zA-Z0-9_-]{11}$/.test(urlOrId)) return urlOrId;
-
   try{
     const u = new URL(urlOrId);
-
-    if(u.hostname.includes("youtube.com") && u.pathname === "/watch"){
-      return u.searchParams.get("v");
-    }
-
+    if(u.hostname.includes("youtube.com") && u.pathname === "/watch") return u.searchParams.get("v");
     if(u.hostname.includes("youtube.com") && u.pathname.startsWith("/live/")){
       return u.pathname.split("/live/")[1]?.split(/[?/]/)[0] || null;
     }
-
-    if(u.hostname === "youtu.be"){
-      return u.pathname.replace("/", "").split(/[?/]/)[0] || null;
-    }
+    if(u.hostname === "youtu.be") return u.pathname.replace("/", "").split(/[?/]/)[0] || null;
   }catch{}
-
   return null;
 }
 
@@ -274,6 +329,8 @@ function normalizeType(item){
 
   const u = String(item.url || "");
   if(u.includes(".m3u8")) return "hls";
+  if(u.match(/\.mp4(\?|$)/i)) return "mp4";
+  if(u.match(/\.mp3(\?|$)|\.aac(\?|$)|\.m4a(\?|$)/i)) return "audio";
   if(extractYouTubeId(u)) return "youtube";
   return "web";
 }
@@ -286,13 +343,11 @@ function unlockYoutubeAudioNow(){
 
   ytSoundUnlocked = true;
   setSoundButtonState();
-
   iframe.src = youtubeEmbedUrl(ytPendingVideoId, false);
   return true;
 }
 
 /* ============ PLAY ============ */
-
 function playChannelByIndex(idx){
   if(!PLAYLIST.length) return;
 
@@ -301,7 +356,7 @@ function playChannelByIndex(idx){
   currentIndex = idx;
 
   const ch = PLAYLIST[currentIndex];
-  setNowPlaying(`${ch.name || "Canal"} (${currentIndex+1}/${PLAYLIST.length})`);
+  setNowPlaying(`${ch.name || "Reproduciendo"} (${currentIndex+1}/${PLAYLIST.length})`);
 
   stopPlayers();
   openPlayer();
@@ -314,10 +369,8 @@ function playChannelByIndex(idx){
     iframe.referrerPolicy = "no-referrer-when-downgrade";
     iframe.src = ch.url;
     iframe.style.display = "block";
-
     isCurrentYouTube = false;
     setSoundButtonState();
-
     showHudAndArmTimer(false);
     setTimeout(() => $("btnBack")?.focus(), 120);
     return;
@@ -341,7 +394,6 @@ function playChannelByIndex(idx){
     const iframe = $("iframePlayer");
     iframe.allow = "autoplay; fullscreen; encrypted-media";
     iframe.referrerPolicy = "origin";
-
     setSoundButtonState();
 
     const startMuted = !ytSoundUnlocked;
@@ -349,52 +401,43 @@ function playChannelByIndex(idx){
     iframe.style.display = "block";
 
     showHudAndArmTimer(false);
-
     setTimeout(() => {
       if(!ytSoundUnlocked) $("btnSound")?.focus();
       else $("btnBack")?.focus();
     }, 140);
-
     return;
   }
 
-  if(type === "hls"){
-    const video = $("videoPlayer");
-    video.style.display = "block";
+  // ✅ mp4 / hls / audio via video.js
+  const v = $("videoPlayer");
+  v.style.display = "block";
+  isCurrentYouTube = false;
+  setSoundButtonState();
 
-    isCurrentYouTube = false;
-    setSoundButtonState();
-
-    if(video.canPlayType("application/vnd.apple.mpegurl")){
-      video.src = ch.url;
-      video.play().catch(()=>{});
-      showHudAndArmTimer(false);
-      setTimeout(() => $("btnBack")?.focus(), 120);
-      return;
-    }
-
-    if(window.Hls && Hls.isSupported()){
-      hls = new Hls();
-      hls.loadSource(ch.url);
-      hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        video.play().catch(()=>{});
-        showHudAndArmTimer(false);
-        setTimeout(() => $("btnBack")?.focus(), 120);
-      });
-      return;
-    }
-
-    alert("Este dispositivo/navegador no soporta HLS (.m3u8).");
+  const player = ensureVideoJS();
+  if(!player){
+    alert("No se pudo inicializar video.js");
     closePlayer(true);
+    return;
   }
+
+  const srcType =
+    type === "hls" ? "application/x-mpegURL" :
+    type === "mp4" ? "video/mp4" :
+    type === "audio" ? "audio/mpeg" :
+    "";
+
+  player.src([{ src: ch.url, type: srcType }]);
+  player.play().catch(()=>{});
+
+  showHudAndArmTimer(false);
+  setTimeout(() => $("btnBack")?.focus(), 120);
 }
 
 function nextChannel(){ playChannelByIndex(currentIndex + 1); }
 function prevChannel(){ playChannelByIndex(currentIndex - 1); }
 
 /* ============ GRID INSIDE PLAYER ============ */
-
 function showGrid(){
   $("playerGrid").hidden = false;
   const grid = $("gridInsidePlayer");
@@ -416,7 +459,6 @@ function showGrid(){
   showHudAndArmTimer(true);
   setTimeout(() => (grid.querySelector(".card") || $("btnCloseGrid"))?.focus(), 80);
 }
-
 function hideGrid(){
   if($("playerGrid")) $("playerGrid").hidden = true;
   showHudAndArmTimer(false);
@@ -434,7 +476,6 @@ $("btnSound")?.addEventListener("click", () => {
   unlockYoutubeAudioNow();
   showHudAndArmTimer(false);
 });
-
 $("playerTap")?.addEventListener("pointerdown", (e) => {
   if(!isPlayerOpen()) return;
   e.preventDefault();
@@ -442,59 +483,33 @@ $("playerTap")?.addEventListener("pointerdown", (e) => {
   showHudAndArmTimer(false);
 }, { passive:false });
 
-/* ========= CH UP / DOWN (control remoto) =========
-   Android TV suele enviar keyCode 166/167 o e.key "ChannelUp"/"ChannelDown".
-   También soportamos PageUp/PageDown por compatibilidad.
-*/
-function isChUp(e){
-  const k = (e.key || "");
-  const c = (e.code || "");
-  const kc = e.keyCode || e.which || 0;
-  return k === "ChannelUp" || k === "PageUp" || c === "ChannelUp" || kc === 166;
-}
-function isChDown(e){
-  const k = (e.key || "");
-  const c = (e.code || "");
-  const kc = e.keyCode || e.which || 0;
-  return k === "ChannelDown" || k === "PageDown" || c === "ChannelDown" || kc === 167;
-}
-
 /* Key handling TV */
 document.addEventListener("keydown", (e) => {
-  // ✅ Si está el player abierto, cualquier tecla re-muestra HUD (y rearma timer)
   if(isPlayerOpen() && !isGridOpen()) showHudAndArmTimer(false);
-
-  // ✅ Volver desde vista categoría (cuando NO está el player)
-  if(!isPlayerOpen() && isCategoryOpen()){
-    const key = e.key;
-    const isBack =
-      key === "Escape" || key === "Backspace" || key === "GoBack" ||
-      key === "BrowserBack" || key === "Back";
-    if(isBack){
-      e.preventDefault();
-      setCatToUrl("");
-      renderByRoute();
-      return;
-    }
-  }
-
-  // Si no está el player, no interceptamos CH ▲/▼ (así no rompemos navegación del sistema)
-  if(!isPlayerOpen()) return;
-
-  // ✅ CH ▲/▼: cambiar canal SIEMPRE que el player esté abierto (y no esté la grilla encima)
-  if(!isGridOpen() && (isChUp(e) || isChDown(e))){
-    e.preventDefault();
-    e.stopPropagation();
-    showHudAndArmTimer(false);
-    if(isChUp(e)) nextChannel();
-    else prevChannel();
-    return;
-  }
 
   const key = e.key;
   const isBack =
     key === "Escape" || key === "Backspace" || key === "GoBack" ||
     key === "BrowserBack" || key === "Back";
+
+  // Back desde episodios
+  if(!isPlayerOpen() && isEpisodeOpen() && isBack){
+    e.preventDefault();
+    // vuelve a la grilla de series (misma categoría)
+    setRouteParams({ catId: currentSeriesCatId || getCatFromUrl(), seriesId: "" });
+    renderByRoute();
+    return;
+  }
+
+  // Back desde categoría
+  if(!isPlayerOpen() && isCategoryOpen() && isBack){
+    e.preventDefault();
+    setRouteParams({ catId: "", seriesId: "" });
+    renderByRoute();
+    return;
+  }
+
+  if(!isPlayerOpen()) return;
 
   if(isBack){
     e.preventDefault();
@@ -517,14 +532,12 @@ document.addEventListener("keydown", (e) => {
       showHudAndArmTimer(false);
       return;
     }
-
     $("player").classList.remove("hideHud");
     showHudAndArmTimer(false);
   }
 }, true);
 
 /* ============ DATA + RENDER ============ */
-
 function findCategoryById(catId){
   return (CFG?.categories || []).find(c => c.id === catId) || null;
 }
@@ -533,7 +546,10 @@ function buildPlaylistFromCategory(cat){
   const list = [];
   (cat?.items || []).forEach(item => {
     const type = normalizeType(item);
-    if(type === "youtube" || type === "hls"){
+    // reproductibles directos
+    if(type === "youtube" || type === "hls" || type === "mp4" || type === "audio" || type === "web"){
+      // ⚠️ si es “serie” con episodios, no se agrega acá (se reproduce por episodio)
+      if(Array.isArray(item.episodes) && item.episodes.length) return;
       list.push({ ...item, type, category: cat.name || "" });
     }
   });
@@ -544,7 +560,6 @@ function renderShortcuts(){
   const shortcutsEl = $("shortcuts");
   if(!shortcutsEl) return;
   shortcutsEl.innerHTML = "";
-
   (CFG.shortcuts || []).forEach(s => {
     shortcutsEl.appendChild(makeCard({
       title: s.name,
@@ -559,7 +574,6 @@ function renderShortcuts(){
 function renderHomeCategories(){
   const homeEl = $("homeCategories");
   if(!homeEl) return;
-
   homeEl.innerHTML = "";
 
   const cats = (CFG.homeCategories && CFG.homeCategories.length)
@@ -574,24 +588,113 @@ function renderHomeCategories(){
   cats.forEach(c => {
     const cat = findCategoryById(c.id);
     const count = (cat?.items || []).length;
-
     homeEl.appendChild(makeCard({
       title: c.name || "Categoría",
       desc: c.desc || `${count} items`,
       icon: c.icon || "assets/logo-header.png",
       tag: `${count} ítems`,
-      onClick: () => { setCatToUrl(c.id); renderByRoute(); }
+      onClick: () => { setRouteParams({ catId: c.id, seriesId: "" }); renderByRoute(); }
     }));
   });
 }
 
-function renderCategoryView(catId){
-  const cat = findCategoryById(catId);
-
+function hideAllViews(){
   const shortcutsBlock = $("shortcutsBlock");
   if(shortcutsBlock) shortcutsBlock.hidden = true;
   $("homeCategoriesBlock").hidden = true;
+  $("categoryView").hidden = true;
+  $("episodeView").hidden = true;
+}
 
+function renderHome(){
+  const shortcutsBlock = $("shortcutsBlock");
+  if(shortcutsBlock) shortcutsBlock.hidden = false;
+
+  $("homeCategoriesBlock").hidden = false;
+  $("categoryView").hidden = true;
+  $("episodeView").hidden = true;
+
+  renderShortcuts();
+  renderHomeCategories();
+
+  setTimeout(() => {
+    const first = document.querySelector("#shortcuts .card") || document.querySelector("#homeCategories .card");
+    first?.focus();
+  }, 80);
+}
+
+/* ✅ NUEVO: vista episodios */
+function renderEpisodeView(catId, seriesId){
+  hideAllViews();
+  $("episodeView").hidden = false;
+
+  const cat = findCategoryById(catId);
+  if(!cat){
+    $("episodeTitle").textContent = "Episodios";
+    $("episodeGrid").innerHTML = "";
+    $("episodeGrid").appendChild(makeCard({
+      title: "Categoría no encontrada",
+      desc: "Volvé y elegí otra categoría.",
+      icon: "assets/logo-header.png",
+      tag: "Error",
+      onClick: () => {}
+    }));
+    setTimeout(() => $("btnBackToSeries")?.focus(), 60);
+    return;
+  }
+
+  currentSeriesCatId = catId;
+
+  const series = (cat.items || []).find(x => (x.id || "") === seriesId) || null;
+  currentSeries = series;
+
+  $("episodeTitle").textContent = series?.name ? `Episodios • ${series.name}` : "Episodios";
+
+  const grid = $("episodeGrid");
+  grid.innerHTML = "";
+
+  const eps = series?.episodes || [];
+  if(!eps.length){
+    grid.appendChild(makeCard({
+      title: "Sin episodios",
+      desc: "Esta serie no tiene episodios cargados.",
+      icon: series?.icon || "assets/logo-header.png",
+      tag: "Info",
+      onClick: () => {}
+    }));
+    setTimeout(() => $("btnBackToSeries")?.focus(), 60);
+    return;
+  }
+
+  // playlist = episodios para poder usar next/prev/grilla
+  PLAYLIST = eps.map(ep => ({
+    name: ep.name,
+    url: ep.url,
+    icon: ep.icon || series.icon || "assets/logo-header.png",
+    desc: ep.desc || "",
+    type: normalizeType(ep),
+    category: series.name || "Serie"
+  }));
+  currentIndex = -1;
+
+  eps.forEach((ep, i) => {
+    grid.appendChild(makeCard({
+      title: ep.name || `Episodio ${i+1}`,
+      desc: ep.desc || "",
+      icon: ep.icon || series.icon,
+      tag: ep.tag || "",
+      onClick: () => playChannelByIndex(i)
+    }));
+  });
+
+  setTimeout(() => (grid.querySelector(".card") || $("btnBackToSeries"))?.focus(), 80);
+}
+
+/* Vista categoría (pelis, series, etc.) */
+function renderCategoryView(catId){
+  hideAllViews();
+
+  const cat = findCategoryById(catId);
   $("categoryView").hidden = false;
   $("categoryTitle").textContent = cat?.name || "Categoría";
 
@@ -611,17 +714,28 @@ function renderCategoryView(catId){
     return;
   }
 
+  // playlist para items directos (pelis/canales)
   PLAYLIST = buildPlaylistFromCategory(cat);
 
   (cat.items || []).forEach(item => {
+    const hasEpisodes = Array.isArray(item.episodes) && item.episodes.length;
     const type = normalizeType(item);
 
     grid.appendChild(makeCard({
       title: item.name,
       desc: item.desc || "",
       icon: item.icon,
-      tag: (type === "web") ? "Web" : (type.toUpperCase()),
+      tag: hasEpisodes ? "SERIE" : ((type === "web") ? "WEB" : type.toUpperCase()),
       onClick: () => {
+        // ✅ si es serie -> abrir episodios
+        if(hasEpisodes){
+          const seriesId = item.id || item.name; // ideal: que tenga id fijo en channels.json
+          setRouteParams({ catId, seriesId });
+          renderByRoute();
+          return;
+        }
+
+        // web directo
         if(type === "web"){
           openPlayer();
           stopPlayers();
@@ -634,8 +748,10 @@ function renderCategoryView(catId){
           return;
         }
 
+        // play desde playlist directo (pelis/canales)
         const idx = PLAYLIST.findIndex(x => x.url === item.url && x.name === item.name);
         if(idx >= 0) playChannelByIndex(idx);
+        else alert("Este ítem no está listo para reproducir (¿serie sin episodios?)");
       }
     }));
   });
@@ -643,42 +759,63 @@ function renderCategoryView(catId){
   setTimeout(() => $("btnBackToHome")?.focus(), 80);
 }
 
-function renderHome(){
-  const shortcutsBlock = $("shortcutsBlock");
-  if(shortcutsBlock) shortcutsBlock.hidden = false;
-
-  $("homeCategoriesBlock").hidden = false;
-  $("categoryView").hidden = true;
-
-  renderShortcuts();
-  renderHomeCategories();
-
-  setTimeout(() => {
-    const first = document.querySelector("#shortcuts .card") || document.querySelector("#homeCategories .card");
-    first?.focus();
-  }, 80);
-}
-
+/* Ruteo */
 function renderByRoute(){
   const catId = getCatFromUrl();
-  if(catId) renderCategoryView(catId);
-  else renderHome();
+  const seriesId = getSeriesFromUrl();
+
+  if(catId && seriesId){
+    renderEpisodeView(catId, seriesId);
+    return;
+  }
+  if(catId){
+    renderCategoryView(catId);
+    return;
+  }
+  renderHome();
 }
 
+/* Botones volver */
 $("btnBackToHome")?.addEventListener("click", () => {
-  setCatToUrl("");
+  setRouteParams({ catId: "", seriesId: "" });
   renderByRoute();
 });
 
-/* Load config */
-fetch("config/channels.json?v=12")
-  .then(r => r.json())
+$("btnBackToSeries")?.addEventListener("click", () => {
+  setRouteParams({ catId: currentSeriesCatId || getCatFromUrl(), seriesId: "" });
+  renderByRoute();
+});
+
+/* ============ LOAD CONFIG (multi-path) ============ */
+const CONFIG_CANDIDATES = [
+  "config/channels.with_assets.json",
+  "config/channels.json",
+  "channels.json"
+];
+
+function looksLikeCfg(obj){
+  return obj && typeof obj === "object" && Array.isArray(obj.categories);
+}
+
+async function loadFirstValidConfig(){
+  for(const url of CONFIG_CANDIDATES){
+    try{
+      const r = await fetch(url + "?v=" + Date.now(), { cache: "no-store" });
+      if(!r.ok) continue;
+      const cfg = await r.json();
+      if(looksLikeCfg(cfg)) return cfg;
+    }catch{}
+  }
+  throw new Error("No se pudo cargar ningún channels.json válido.");
+}
+
+loadFirstValidConfig()
   .then(cfg => {
     CFG = cfg;
     setBrand(cfg.brand);
     renderByRoute();
   })
   .catch(err => {
-    console.error("Error cargando config/channels.json:", err);
-    alert("No se pudo cargar config/channels.json. Revisá nombre/ruta y que sea JSON válido.");
+    console.error("Error cargando config:", err);
+    alert("No se pudo cargar la configuración de canales. Revisá que exista channels.json o config/channels.json y que sea JSON válido.");
   });
