@@ -214,7 +214,7 @@
         {
           "name": "TyC Sports",
           "icon": "assets/tycsports.png",
-          "url": "ttps://smjt9q.envivoslatam.org/tycsports/tracks-v1a1/mono.m3u8?ip=181.44.130.47&token=d06de61f8485c034bcc8debcebce2aee70ee2eab-cb-1771864509-1771810509",
+          "url": "https://smjt9q.envivoslatam.org/tycsports/tracks-v1a1/mono.m3u8?ip=181.44.130.47&token=d06de61f8485c034bcc8debcebce2aee70ee2eab-cb-1771864509-1771810509",
           "type": "hls"
         },
         {
