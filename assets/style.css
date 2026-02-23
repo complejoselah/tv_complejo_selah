@@ -2,7 +2,7 @@
 
 :root{
   --accent:#F5C542;
-  --bg: url("selah_bg.jpg");
+  --bg: url("bg.jpg");
   --topbarH: 0px;
 }
 
@@ -159,12 +159,21 @@ h2{
   scroll-margin-top: calc(var(--topbarH) + 16px);
 }
 
+
+
 .card img{
   width:100%;
   aspect-ratio:16/9;
   object-fit: cover;
   display:block;
   background: rgba(0,0,0,0.25);
+}
+
+
+.card img.imgFallback{
+  object-fit: contain;
+  padding: 18px;
+  background: rgba(0,0,0,0.35);
 }
 
 .cardBody{
