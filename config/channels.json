@@ -214,25 +214,25 @@
         {
           "name": "TyC Sports",
           "icon": "assets/tycsports.png",
-          "url": "https://xky9q.envivoslatam.org/tycsports/tracks-v1a1/mono.m3u8?ip=148.222.222.129&token=24d38786c27cc531ba2cef60196c6f94d43ac4c3-5c-1772719284-1772665284",
+          "url": "https://j8nte.envivoslatam.org/tycsports/tracks-v1a1/mono.m3u8?ip=148.222.222.129&token=a6d8a4687101a030c2d059bcba6fc53f916b09a1-c3-1772760165-1772706165",
           "type": "hls"
         },
         {
           "name": "TNT Sport",
           "icon": "assets/tntsports.jpeg",
-          "url": "https://lcrj3.envivoslatam.org/tntsports/tracks-v1a1/mono.m3u8?ip=148.222.222.129&token=8d0a9222213ee024cf828bc44311fcad6b267f4d-79-1772719324-1772665324",
+          "url": "https://qbk4f.envivoslatam.org/tntsports/tracks-v1a1/mono.m3u8?ip=148.222.222.129&token=15edf5ca7f68243f28262d98a8df7fcf143e61e9-36-1772760210-1772706210",
           "type": "hls"
         },
         {
           "name": "ESPN",
           "icon": "assets/espn.jpeg",
-          "url": "https://ng0pr.envivoslatam.org/espnpremium/tracks-v1a1/mono.m3u8?ip=148.222.222.129&token=48fddff77f0480a3621b06848bc6ec75ab052b2d-e2-1772719360-1772665360",
+          "url": "https://j8nte.envivoslatam.org/espnpremium/tracks-v1a1/mono.m3u8?ip=148.222.222.129&token=47cbd484d8e525fda5ba91318b673f1e6002fef6-93-1772760246-1772706246",
           "type": "hls"
         },
         {
           "name": "Directv Sports",
           "icon": "assets/directv.png",
-          "url": "https://rci1w.envivoslatam.org/dsports/tracks-v1a1/mono.m3u8?ip=148.222.222.129&token=eba3b60c4d55aa3f2db2b2c6f1933de2ca24ec7a-1b-1772719397-1772665397",
+          "url": "https://rci1w.envivoslatam.org/dsports/tracks-v1a1/mono.m3u8?ip=148.222.222.129&token=4f545197117f6e5e1cc1bc395148f0707fd4ddec-8e-1772760286-1772706286",
           "type": "hls"
         }
       ]
