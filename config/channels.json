@@ -226,15 +226,13 @@
         {
           "name": "ESPN",
           "icon": "assets/espn.jpeg",
-          "url": "
-https://smjt9q.envivoslatam.org/espnpremium/tracks-v1a1/mono.m3u8?ip=148.222.194.159&token=aaaf0f0810dbd755e4309324766ab05af5f060c6-19-1772938254-1772884254",
+          "url": "https://smjt9q.envivoslatam.org/espnpremium/tracks-v1a1/mono.m3u8?ip=148.222.194.159&token=aaaf0f0810dbd755e4309324766ab05af5f060c6-19-1772938254-1772884254",
           "type": "hls"
         },
         {
           "name": "Directv Sports",
           "icon": "assets/directv.png",
-          "url": "
-https://iaw5b.envivoslatam.org/dsports/tracks-v1a1/mono.m3u8?ip=148.222.194.159&token=7c925a67bce37b62479ece9bdb262d2e478fec14-37-1772938292-1772884292",
+          "url": "https://iaw5b.envivoslatam.org/dsports/tracks-v1a1/mono.m3u8?ip=148.222.194.159&token=7c925a67bce37b62479ece9bdb262d2e478fec14-37-1772938292-1772884292",
           "type": "hls"
         }
       ]
