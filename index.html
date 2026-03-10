@@ -3,20 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="Permissions-Policy" content="autoplay=(self)">
+  <meta http-equiv="Permissions-Policy" content="autoplay=(self)" />
   <title>Selah TV</title>
 
   <link rel="icon" type="image/x-icon" href="favicon_32x32.ico" />
-  <link rel="shortcut icon" href="favicon_32x32.ico" />
-
   <meta name="theme-color" content="#0b0f12" />
+
+  <!-- Video.js (LOCAL, una sola vez) -->
+  <link rel="stylesheet" href="assets/vendor/videojs/video-js.min.css">
   <link rel="stylesheet" href="assets/style.css?v=12" />
 
-  <!-- video.js -->
-  <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
-  <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/videojs-contrib-quality-levels@3.0.0/dist/videojs-contrib-quality-levels.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/videojs-http-streaming@3.5.0/dist/videojs-http-streaming.min.js"></script>
 </head>
 
 <body>
@@ -31,16 +27,18 @@
   </header>
 
   <main class="container">
-    <!-- Accesos (HOME) -->
-    <section class="block" id="shortcutsBlock">
-      <h2 id="homeTitle">Accesos</h2>
-      <div class="grid" id="shortcuts"></div>
-    </section>
+    
 
     <!-- HOME: categorías como tarjetas -->
     <section class="block" id="homeCategoriesBlock">
       <h2>Categorías</h2>
       <div class="grid" id="homeCategories"></div>
+    </section>
+
+    <!-- Accesos (HOME) -->
+    <section class="block" id="shortcutsBlock">
+      <h2 id="homeTitle">Accesos</h2>
+      <div class="grid" id="shortcuts"></div>
     </section>
 
     <!-- VISTA CATEGORÍA -->
@@ -50,17 +48,60 @@
         <h2 id="categoryTitle" class="categoryHeaderTitle">Categoría</h2>
       </div>
 
-      <div class="grid" id="categoryGrid"></div>
+            <div class="toolbar" id="categoryToolbar" hidden>
+        <input id="categorySearch" class="searchInput" type="search" placeholder="Buscar..." autocomplete="off" />
+        <button id="btnClearCategorySearch" class="btnGhost" type="button">Limpiar</button>
+      </div>
+
+<div class="grid" id="categoryGrid"></div>
     </section>
 
-    <!-- ✅ VISTA EPISODIOS (Series -> Episodios) -->
+        <!-- ✅ VISTA DETALLE (Jellyfin-like) -->
+    <section class="block" id="detailView" hidden>
+      <div class="detailHeader">
+        <button id="btnBackFromDetail" class="btnBackHome" type="button" aria-label="Volver">⬅ Volver</button>
+        <h2 id="detailTitle" class="detailHeaderTitle">Detalle</h2>
+      </div>
+
+      <div class="detailWrap">
+        <div class="detailPoster">
+          <img id="detailPosterImg" alt="" loading="eager" decoding="async" />
+        </div>
+
+        <div class="detailInfo">
+          <div class="detailMeta">
+            <span class="metaChip"><strong>Año:</strong> <span id="detailYear">—</span></span>
+            <span class="metaChip"><strong>Duración:</strong> <span id="detailDuration">—</span></span>
+            <span class="metaChip"><strong>Género:</strong> <span id="detailGenre">—</span></span>
+          </div>
+
+          <div class="detailActions">
+            <button id="btnDetailPlay" class="btnPrimary" type="button">▶ Reproducir</button>
+            <button id="btnDetailEpisodes" class="btnGhost" type="button" hidden>📺 Episodios</button>
+            <button id="btnDetailTrailer" class="btnGhost" type="button">🎬 Trailer</button>
+          </div>
+
+          <div class="detailDesc">
+            <h3>Resumen</h3>
+            <p id="detailDescText">—</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+<!-- ✅ VISTA EPISODIOS (Series -> Episodios) -->
     <section class="block" id="episodeView" hidden>
       <div class="categoryHeader">
         <button id="btnBackToSeries" class="btnBackHome" type="button" aria-label="Volver a series">⬅ Volver</button>
         <h2 id="episodeTitle" class="categoryHeaderTitle">Episodios</h2>
       </div>
 
-      <div class="grid" id="episodeGrid"></div>
+            <div class="toolbar" id="episodeToolbar" hidden>
+        <input id="episodeSearch" class="searchInput" type="search" placeholder="Buscar episodios..." autocomplete="off" />
+        <button id="btnClearEpisodeSearch" class="btnGhost" type="button">Limpiar</button>
+      </div>
+
+<div class="grid" id="episodeGrid"></div>
     </section>
   </main>
 
@@ -121,10 +162,16 @@
     </div>
   </div>
 
+
+
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>
 
+  <!-- Video.js (LOCAL, una sola vez) -->
+  <script src="assets/vendor/videojs/video.min.js"></script>
+
+  <!-- app.js SIEMPRE después de Video.js -->
   <script src="assets/app.js?v=17"></script>
 </body>
 </html>
