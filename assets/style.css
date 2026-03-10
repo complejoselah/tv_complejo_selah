@@ -381,3 +381,291 @@ h2{
     box-shadow: 0 0 18px rgba(255,255,255,.28);
   }
 }
+
+
+/* ====== Toolbar / Buscador ====== */
+.toolbar{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  margin: 10px 0 16px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(0,0,0,.35);
+  backdrop-filter: blur(4px);
+}
+.searchInput{
+  flex:1;
+  min-width: 220px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(0,0,0,.35);
+  color:#fff;
+  font-size: 16px;
+  outline: none;
+}
+.searchInput::placeholder{ color: rgba(255,255,255,.65); }
+.btnGhost{
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(0,0,0,.25);
+  color:#fff;
+  cursor:pointer;
+}
+.btnGhost:focus{ outline: 3px solid rgba(245,196,66,.55); outline-offset: 2px; }
+
+/* ====== Detalle Jellyfin-like ====== */
+.detailHeader{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin-bottom: 12px;
+}
+.detailHeaderTitle{ margin:0; }
+.detailWrap{
+  display:grid;
+  grid-template-columns: 280px 1fr;
+  gap: 18px;
+  align-items:start;
+}
+.detailPoster img{
+  width:100%;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.45);
+  background: rgba(0,0,0,.25);
+}
+.detailInfo{
+  border-radius: 16px;
+  padding: 14px 14px;
+  background: rgba(0,0,0,.28);
+  backdrop-filter: blur(4px);
+}
+.detailMeta{
+  display:flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.metaChip{
+  display:inline-flex;
+  gap:6px;
+  align-items:center;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(0,0,0,.25);
+  font-size: 14px;
+}
+.detailActions{ display:flex; gap: 10px; flex-wrap:wrap; margin: 10px 0 14px; }
+.btnPrimary{
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: none;
+  background: rgba(245,196,66,.95);
+  color: #1a1a1a;
+  font-weight: 700;
+  cursor:pointer;
+}
+.btnPrimary:focus{ outline: 3px solid rgba(245,196,66,.55); outline-offset: 2px; }
+.detailDesc h3{ margin: 0 0 8px; }
+.detailDesc p{ margin:0; line-height: 1.45; color: rgba(255,255,255,.92); }
+
+/* TV performance tweaks */
+@media (hover:none){
+  body{ background-attachment: scroll !important; }
+  .card{ content-visibility: auto; contain-intrinsic-size: 220px 260px; }
+  img{ image-rendering: auto; }
+}
+@media (max-width: 900px){
+  .detailWrap{ grid-template-columns: 1fr; }
+  .detailPoster{ max-width: 360px; }
+}
+
+/* ===========================
+   MOVIE DETAIL (Jellyfin-like)
+   (Scoped to .detailModal to avoid style collisions)
+   =========================== */
+
+.detailModal .detailLayout{
+  display: grid;
+  grid-template-columns: min(420px, 38vw) 1fr;
+  gap: 22px;
+  align-items: start;
+}
+
+.detailModal .detailPoster{
+  width: 100%;
+  max-width: 420px;
+  border-radius: 14px;
+  object-fit: cover;
+  display: block;
+}
+
+.detailModal .detailTitle{
+  font-size: clamp(22px, 2.2vw, 34px);
+  margin: 0 0 10px;
+  line-height: 1.1;
+}
+
+.detailModal .detailMeta{
+  opacity: .9;
+  margin: 0 0 10px;
+  line-height: 1.3;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.detailModal .detailPlot{
+  line-height: 1.35;
+  opacity: .92;
+  margin: 0;
+  max-width: 920px;
+}
+
+.detailModal .detailActions{
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.detailModal .detailTrailerWrap{
+  margin-top: 16px;
+  width: 100%;
+  max-width: 920px;
+}
+
+.detailModal #detailTrailerFrame{
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  border-radius: 14px;
+  background: #000;
+}
+
+@media (max-width: 720px){
+  .detailModal .detailLayout{ grid-template-columns: 1fr; }
+  .detailModal .detailPoster{ max-width: 100%; }
+}
+
+#categoryToolbar .categoryGenre{
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.2);
+  background: rgba(0,0,0,.35);
+  color: #fff;
+  margin-right: 10px;
+}
+/* ===== Toolbar de filtros ===== */
+#categoryToolbar{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  align-items:center;
+  margin: 14px 0 18px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(0,0,0,.28);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* Selects e input de filtros */
+#categoryToolbar select,
+#categoryToolbar input,
+#episodeToolbar input{
+  appearance:none;
+  -webkit-appearance:none;
+  border:1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.08);
+  color:#fff;
+  border-radius: 12px;
+  padding: 10px 14px;
+  min-height: 42px;
+  font-size: 15px;
+  outline:none;
+  transition: border-color .2s ease, background .2s ease, transform .15s ease;
+}
+
+#categoryToolbar select{
+  min-width: 180px;
+  cursor:pointer;
+}
+
+#categoryToolbar input,
+#episodeToolbar input{
+  flex:1;
+  min-width: 220px;
+}
+
+#categoryToolbar select:hover,
+#categoryToolbar input:hover,
+#episodeToolbar input:hover{
+  background: rgba(255,255,255,.12);
+  border-color: rgba(255,255,255,.28);
+}
+
+#categoryToolbar select:focus,
+#categoryToolbar input:focus,
+#episodeToolbar input:focus{
+  border-color: var(--accent, #F5C542);
+  box-shadow: 0 0 0 3px rgba(245,197,66,.18);
+  background: rgba(255,255,255,.14);
+}
+
+/* Botón limpiar */
+#btnClearCategorySearch,
+#btnClearEpisodeSearch{
+  border:1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.08);
+  color:#fff;
+  border-radius: 12px;
+  padding: 10px 14px;
+  min-height: 42px;
+  cursor:pointer;
+  transition: border-color .2s ease, background .2s ease, transform .15s ease;
+}
+
+#btnClearCategorySearch:hover,
+#btnClearEpisodeSearch:hover{
+  background: rgba(255,255,255,.12);
+  border-color: rgba(255,255,255,.28);
+  transform: translateY(-1px);
+}
+
+#btnClearCategorySearch:focus,
+#btnClearEpisodeSearch:focus{
+  outline:none;
+  border-color: var(--accent, #F5C542);
+  box-shadow: 0 0 0 3px rgba(245,197,66,.18);
+}
+
+/* Toolbar episodios */
+#episodeToolbar{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  margin: 10px 0 18px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(0,0,0,.24);
+}
+
+/* Mejor lectura de options */
+#categoryToolbar option{
+  color:#111;
+}
+
+/* TV / pantallas grandes */
+.isTv #categoryToolbar select,
+.isTv #categoryToolbar input,
+.isTv #episodeToolbar input,
+.isTv #btnClearCategorySearch,
+.isTv #btnClearEpisodeSearch{
+  font-size: 18px;
+  min-height: 52px;
+  padding: 12px 16px;
+}

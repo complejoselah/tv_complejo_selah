@@ -19,9 +19,36 @@ const $ = (id) => document.getElementById(id);
   });
 })();
 
+// ===== Filtros Películas (género + texto) =====
+let MOVIE_GENRE = "ALL";
+let CHRISTIAN_CATALOG = "ALL";
+let CHRISTIAN_LANGUAGE = "ALL";
+let CHRISTIAN_COUNTRY = "ALL";
+
+function normText(s=""){
+  return String(s)
+    .toLowerCase()
+    .normalize("NFKD").replace(/[\u0300-\u036f]/g,"")
+    .trim();
+}
+
+function isChristianCategory(catId){
+  return catId === "cristianos-canales";
+}
+
+function isMoviesCategory(catId){
+  // ajustá si tu id real de películas es otro
+  return catId === "pelis-legales";
+}
+
 let CFG = null;
 let PLAYLIST = [];
 let currentIndex = -1;
+
+let DETAIL_ITEM = null;
+let DETAIL_CAT_ID = "";
+let DETAIL_SERIES_ID = "";
+
 
 let lastFocusMain = null;
 let lastFocusGrid = null;
@@ -112,7 +139,6 @@ function setSoundButtonState(){
   b.setAttribute("aria-label", ytSoundUnlocked ? "Sonido habilitado" : "Activar sonido");
 }
 
-/* ====== Card robusta (acepta URL externa) ====== */
 function makeCard({title, desc, icon, tag, onClick}){
   const card = document.createElement("div");
   card.className = "card";
@@ -237,14 +263,20 @@ function showHudAndArmTimer(forceKeep=false){
   const player = $("player");
   if(!player) return;
 
+  // HUD visible => let clicks go to controls/videojs UI
   player.classList.remove("hideHud");
-  if(hudTimer) clearTimeout(hudTimer);
+  const tap = $("playerTap");
+  if(tap) tap.style.pointerEvents = "none";
 
+  if(hudTimer) clearTimeout(hudTimer);
   if(forceKeep) return;
 
   hudTimer = setTimeout(() => {
     if(isPlayerOpen() && !isGridOpen()){
+      // HUD hidden => enable tap layer to "wake" the HUD again
       player.classList.add("hideHud");
+      const tap2 = $("playerTap");
+      if(tap2) tap2.style.pointerEvents = "auto";
     }
   }, HUD_HIDE_MS);
 }
@@ -332,6 +364,45 @@ function normalizeType(item){
   if(extractYouTubeId(u)) return "youtube";
   return "web";
 }
+
+function isMediaCategory(catId){
+  return catId === "pelis-legales" || catId === "series-legales";
+}
+
+function getMetaValue(item, key){
+  const v = item?.[key];
+  if(v === undefined || v === null) return "";
+  if(Array.isArray(v)) return v.filter(Boolean).join(", ");
+  return String(v);
+}
+
+async function getSynopsis(item){
+  const raw = (item?.desc || "").trim();
+  if(raw.length >= 30) return raw;
+
+  // fallback Wikipedia ES (cacheado)
+  try{
+    const title = (item?.wikiTitle || item?.name || "").trim();
+    if(!title) return raw || "—";
+    const cacheKey = "wiki_sum::" + title.toLowerCase();
+    const cached = localStorage.getItem(cacheKey);
+    if(cached){
+      const obj = JSON.parse(cached);
+      if(obj?.t && (Date.now() - obj.t) < 1000*60*60*24*30) return obj.v || "—";
+    }
+    const url = "https://es.wikipedia.org/api/rest_v1/page/summary/" + encodeURIComponent(title);
+    const r = await fetch(url, { mode:"cors" });
+    if(!r.ok) throw new Error("wiki "+r.status);
+    const j = await r.json();
+    const sum = (j?.extract || "").trim();
+    if(sum){
+      localStorage.setItem(cacheKey, JSON.stringify({ t: Date.now(), v: sum }));
+      return sum;
+    }
+  }catch(e){}
+  return raw || "—";
+}
+
 
 /* ============ YT AUDIO UNLOCK ============ */
 function unlockYoutubeAudioNow(){
@@ -476,9 +547,17 @@ $("btnSound")?.addEventListener("click", () => {
 });
 $("playerTap")?.addEventListener("pointerdown", (e) => {
   if(!isPlayerOpen()) return;
-  e.preventDefault();
-  unlockYoutubeAudioNow();
-  showHudAndArmTimer(false);
+
+  const player = $("player");
+  const hudHidden = !!player && player.classList.contains("hideHud");
+
+  // Only use the tap layer to "wake" the HUD.
+  // When HUD is visible, let the click go to Video.js controls.
+  if(hudHidden){
+    try{ e.preventDefault(); }catch{}
+    unlockYoutubeAudioNow(); // only matters for YouTube/gesture-unlock
+    showHudAndArmTimer(false);
+  }
 }, { passive:false });
 
 /* Key handling TV */
@@ -602,6 +681,8 @@ function hideAllViews(){
   $("homeCategoriesBlock").hidden = true;
   $("categoryView").hidden = true;
   $("episodeView").hidden = true;
+  const dv = $("detailView");
+  if(dv) dv.hidden = true;
 }
 
 function renderHome(){
@@ -675,20 +756,64 @@ function renderEpisodeView(catId, seriesId){
   }));
   currentIndex = -1;
 
-  eps.forEach((ep, i) => {
-    grid.appendChild(makeCard({
-      title: ep.name || `Episodio ${i+1}`,
-      desc: ep.desc || "",
-      icon: ep.icon || series.icon,
-      tag: ep.tag || "",
-      onClick: () => playChannelByIndex(i)
-    }));
-  });
+  setupEpisodeSearch(eps);
+  renderEpisodeItems(eps, "");
 
   setTimeout(() => (grid.querySelector(".card") || $("btnBackToSeries"))?.focus(), 80);
 }
 
+
 /* Vista categoría (pelis, series, etc.) */
+function renderDetailView(catId, item){
+  hideAllViews();
+  $("detailView").hidden = false;
+
+  DETAIL_ITEM = item || null;
+  DETAIL_CAT_ID = catId || "";
+  DETAIL_SERIES_ID = item?.id || item?.name || "";
+
+  $("detailTitle").textContent = item?.name || "Detalle";
+
+  // poster
+  const posterEl = $("detailPosterImg");
+  const posterSrc = toAbsUrl(item?.poster || item?.icon || "");
+  posterEl.src = posterSrc || toAbsUrl("assets/logo-header.png");
+  posterEl.alt = item?.name || "";
+
+  // meta
+  const year = getMetaValue(item, "year");
+  const dur  = getMetaValue(item, "duration");
+  const gen  = getMetaValue(item, "genre") || getMetaValue(item, "genres");
+  $("detailYear").textContent = year || "—";
+  $("detailDuration").textContent = dur || "—";
+  $("detailGenre").textContent = gen || "—";
+
+  // actions
+  const hasEpisodes = Array.isArray(item?.episodes) && item.episodes.length;
+  $("btnDetailEpisodes").hidden = !hasEpisodes;
+
+  // synopsis async
+  $("detailDescText").textContent = "Cargando…";
+  getSynopsis(item).then(txt => {
+    // si el usuario ya se fue, no pisar
+    if($("detailView").hidden) return;
+    $("detailDescText").textContent = txt || "—";
+  });
+
+  // focus
+  setTimeout(() => $("btnDetailPlay")?.focus(), 60);
+}
+
+function backFromDetail(){
+  if(DETAIL_CAT_ID){
+    // volver a categoría sin tocar ruta (mantiene lo que ya funcionaba)
+    renderCategoryView(DETAIL_CAT_ID);
+    return;
+  }
+  renderHome();
+}
+
+
 function renderCategoryView(catId){
   hideAllViews();
 
@@ -712,50 +837,13 @@ function renderCategoryView(catId){
     return;
   }
 
-  // playlist para items directos (pelis/canales)
-  PLAYLIST = buildPlaylistFromCategory(cat);
-
-  (cat.items || []).forEach(item => {
-    const hasEpisodes = Array.isArray(item.episodes) && item.episodes.length;
-    const type = normalizeType(item);
-
-    grid.appendChild(makeCard({
-      title: item.name,
-      desc: item.desc || "",
-      icon: item.icon,
-      tag: hasEpisodes ? "SERIE" : ((type === "web") ? "WEB" : type.toUpperCase()),
-      onClick: () => {
-        // ✅ si es serie -> abrir episodios
-        if(hasEpisodes){
-          const seriesId = item.id || item.name; // ideal: que tenga id fijo en channels.json
-          setRouteParams({ catId, seriesId });
-          renderByRoute();
-          return;
-        }
-
-        // web directo
-        if(type === "web"){
-          openPlayer();
-          stopPlayers();
-          const iframe = $("iframePlayer");
-          iframe.allow = "autoplay; fullscreen; encrypted-media";
-          iframe.src = item.url;
-          iframe.style.display = "block";
-          setNowPlaying(item.name || "Web");
-          showHudAndArmTimer(false);
-          return;
-        }
-
-        // play desde playlist directo (pelis/canales)
-        const idx = PLAYLIST.findIndex(x => x.url === item.url && x.name === item.name);
-        if(idx >= 0) playChannelByIndex(idx);
-        else alert("Este ítem no está listo para reproducir (¿serie sin episodios?)");
-      }
-    }));
-  });
+  // render + buscador
+  setupCategorySearch(catId, cat.items || []);
+  renderCategoryItems(catId, cat.items || [], "");
 
   setTimeout(() => $("btnBackToHome")?.focus(), 80);
 }
+
 
 /* Ruteo */
 function renderByRoute(){
@@ -784,8 +872,66 @@ $("btnBackToSeries")?.addEventListener("click", () => {
   renderByRoute();
 });
 
+// Detalle: volver / acciones
+$("btnBackFromDetail")?.addEventListener("click", backFromDetail);
+
+$("btnDetailPlay")?.addEventListener("click", () => {
+  const item = DETAIL_ITEM;
+  const catId = DETAIL_CAT_ID;
+  if(!item) return;
+
+  const type = normalizeType(item);
+  if(type === "web"){
+    openPlayer();
+    stopPlayers();
+    const iframe = $("iframePlayer");
+    iframe.allow = "autoplay; fullscreen; encrypted-media";
+    iframe.src = item.url;
+    iframe.style.display = "block";
+    setNowPlaying(item.name || "Web");
+    showHudAndArmTimer(false);
+    return;
+  }
+
+  const cat = findCategoryById(catId);
+  PLAYLIST = buildPlaylistFromCategory(cat);
+  const idx = PLAYLIST.findIndex(x => x.url === item.url && x.name === item.name);
+  if(idx >= 0) playChannelByIndex(idx);
+  else {
+    // fallback: reproducir directo como single
+    PLAYLIST = [{ name:item.name, url:item.url, icon:item.icon, desc:item.desc, type: normalizeType(item), category: cat?.name || "" }];
+    playChannelByIndex(0);
+  }
+});
+
+$("btnDetailEpisodes")?.addEventListener("click", () => {
+  const catId = DETAIL_CAT_ID;
+  const seriesId = DETAIL_ITEM?.id || DETAIL_ITEM?.name;
+  if(!catId || !seriesId) return;
+  setRouteParams({ catId, seriesId });
+  renderByRoute();
+});
+
+$("btnDetailTrailer")?.addEventListener("click", () => {
+  const item = DETAIL_ITEM;
+  if(!item) return;
+  const url = (item.trailer || "").trim();
+  const q = encodeURIComponent((item.name || "") + " trailer");
+  const target = url || ("https://www.youtube.com/results?search_query=" + q);
+  window.open(target, "_blank");
+});
+
+// Teclas Back/Escape cuando estás en detalle
+document.addEventListener("keydown", (e) => {
+  if(($("detailView") && !$("detailView").hidden) && (e.key === "Escape" || e.key === "Backspace")){
+    e.preventDefault();
+    backFromDetail();
+  }
+});
+
 /* ============ LOAD CONFIG (multi-path) ============ */
 const CONFIG_CANDIDATES = [
+  "config/channels.enriched.json",       
   "config/channels.with_assets.json",
   "config/channels.json",
   "channels.json"
@@ -817,3 +963,391 @@ loadFirstValidConfig()
     console.error("Error cargando config:", err);
     alert("No se pudo cargar la configuración de canales. Revisá que exista channels.json o config/channels.json y que sea JSON válido.");
   });
+
+function setupCategorySearch(catId, items){
+  const bar = $("categoryToolbar");
+  const inp = $("categorySearch");
+  const clr = $("btnClearCategorySearch");
+  if(!bar || !inp || !clr) return;
+
+  const isMovies = isMoviesCategory(catId);
+  const isChristian = isChristianCategory(catId);
+  const enabled = isMediaCategory(catId) || isChristian;
+
+  bar.hidden = !enabled;
+
+  // ====== Géneros solo para Películas ======
+  let genreSel = document.getElementById("categoryGenre");
+  if(isMovies){
+    if(!genreSel){
+      genreSel = document.createElement("select");
+      genreSel.id = "categoryGenre";
+      genreSel.className = "categoryGenre";
+      bar.insertBefore(genreSel, inp);
+    }
+
+    const set = new Set();
+    (items || []).forEach(it => (it.genres || []).forEach(g => { if(g) set.add(g); }));
+    const genres = ["ALL", ...Array.from(set).sort((a,b)=>a.localeCompare(b))];
+
+    genreSel.innerHTML = genres.map(g =>
+      `<option value="${g}">${g==="ALL" ? "Todos los géneros" : g}</option>`
+    ).join("");
+
+    genreSel.value = MOVIE_GENRE || "ALL";
+
+    if(!genreSel.dataset.bound){
+      genreSel.addEventListener("change", () => {
+        MOVIE_GENRE = genreSel.value;
+        const q = normText(inp.value);
+        renderCategoryItems(catId, items, q);
+      });
+      genreSel.dataset.bound = "1";
+    }
+  }else{
+    if(genreSel) genreSel.remove();
+    MOVIE_GENRE = "ALL";
+  }
+
+  // ====== Catálogo solo para Contenido Cristiano ======
+  let catalogSel = document.getElementById("categoryCatalog");
+  if(isChristian){
+    if(!catalogSel){
+      catalogSel = document.createElement("select");
+      catalogSel.id = "categoryCatalog";
+      catalogSel.className = "categoryCatalog";
+      bar.insertBefore(catalogSel, inp);
+    }
+
+    const setCat = new Set();
+    (items || []).forEach(it => {
+      const c = String(it?.catalog || "").trim();
+      if(c) setCat.add(c);
+    });
+
+    const catalogs = ["ALL", ...Array.from(setCat).sort((a,b)=>a.localeCompare(b))];
+    catalogSel.innerHTML = catalogs.map(c =>
+      `<option value="${c}">${c === "ALL" ? "Todo el contenido" : c}</option>`
+    ).join("");
+
+    catalogSel.value = CHRISTIAN_CATALOG || "ALL";
+
+    if(!catalogSel.dataset.bound){
+      catalogSel.addEventListener("change", () => {
+        CHRISTIAN_CATALOG = catalogSel.value;
+        const q = normText(inp.value);
+        renderCategoryItems(catId, items, q);
+      });
+      catalogSel.dataset.bound = "1";
+    }
+  }else{
+    if(catalogSel) catalogSel.remove();
+    CHRISTIAN_CATALOG = "ALL";
+  }
+
+  // ====== Idioma solo para Contenido Cristiano ======
+  let languageSel = document.getElementById("categoryLanguage");
+  if(isChristian){
+    if(!languageSel){
+      languageSel = document.createElement("select");
+      languageSel.id = "categoryLanguage";
+      languageSel.className = "categoryLanguage";
+      bar.insertBefore(languageSel, inp);
+    }
+
+    const langSet = new Set();
+    (items || []).forEach(it => {
+      (it.languages || []).forEach(l => { if(l) langSet.add(l); });
+    });
+
+    const langs = ["ALL", ...Array.from(langSet).sort((a,b)=>a.localeCompare(b))];
+    languageSel.innerHTML = langs.map(l =>
+      `<option value="${l}">${l === "ALL" ? "Todos los idiomas" : l}</option>`
+    ).join("");
+
+    languageSel.value = CHRISTIAN_LANGUAGE || "ALL";
+
+    if(!languageSel.dataset.bound){
+      languageSel.addEventListener("change", () => {
+        CHRISTIAN_LANGUAGE = languageSel.value;
+        const q = normText(inp.value);
+        renderCategoryItems(catId, items, q);
+      });
+      languageSel.dataset.bound = "1";
+    }
+  }else{
+    if(languageSel) languageSel.remove();
+    CHRISTIAN_LANGUAGE = "ALL";
+  }
+
+  // ====== País solo para Contenido Cristiano ======
+  let countrySel = document.getElementById("categoryCountry");
+  if(isChristian){
+    if(!countrySel){
+      countrySel = document.createElement("select");
+      countrySel.id = "categoryCountry";
+      countrySel.className = "categoryCountry";
+      bar.insertBefore(countrySel, inp);
+    }
+
+    const countrySet = new Set();
+    (items || []).forEach(it => {
+      const c = String(it?.country || "").trim();
+      if(c) countrySet.add(c);
+    });
+
+    const countries = ["ALL", ...Array.from(countrySet).sort((a,b)=>a.localeCompare(b))];
+    countrySel.innerHTML = countries.map(c =>
+      `<option value="${c}">${c === "ALL" ? "Todos los países" : c}</option>`
+    ).join("");
+
+    countrySel.value = CHRISTIAN_COUNTRY || "ALL";
+
+    if(!countrySel.dataset.bound){
+      countrySel.addEventListener("change", () => {
+        CHRISTIAN_COUNTRY = countrySel.value;
+        const q = normText(inp.value);
+        renderCategoryItems(catId, items, q);
+      });
+      countrySel.dataset.bound = "1";
+    }
+  }else{
+    if(countrySel) countrySel.remove();
+    CHRISTIAN_COUNTRY = "ALL";
+  }
+
+  if(!enabled) return;
+
+  inp.value = "";
+
+  if(!inp.dataset.bound){
+    inp.addEventListener("input", () => {
+      const q = normText(inp.value);
+      renderCategoryItems(catId, items, q);
+    });
+    inp.dataset.bound = "1";
+  }
+
+  if(!clr.dataset.bound){
+    clr.addEventListener("click", () => {
+      inp.value = "";
+      inp.dispatchEvent(new Event("input"));
+      inp.focus();
+    });
+    clr.dataset.bound = "1";
+  }
+}
+
+function renderCategoryItems(catId, items, query){
+  const grid = $("categoryGrid");
+  grid.innerHTML = "";
+  const q = normText(query || "");
+
+  // ===== Películas: género =====
+  let selectedGenre = "ALL";
+  const genreSel = document.getElementById("categoryGenre");
+  if(isMoviesCategory(catId) && genreSel){
+    selectedGenre = genreSel.value || "ALL";
+    MOVIE_GENRE = selectedGenre;
+  }
+
+  // ===== Cristianos: catálogo / idioma / país =====
+  let selectedCatalog = "ALL";
+  let selectedLanguage = "ALL";
+  let selectedCountry = "ALL";
+
+  const catalogSel = document.getElementById("categoryCatalog");
+  const languageSel = document.getElementById("categoryLanguage");
+  const countrySel = document.getElementById("categoryCountry");
+
+  if(isChristianCategory(catId)){
+    selectedCatalog = catalogSel ? (catalogSel.value || "ALL") : "ALL";
+    selectedLanguage = languageSel ? (languageSel.value || "ALL") : "ALL";
+    selectedCountry = countrySel ? (countrySel.value || "ALL") : "ALL";
+
+    CHRISTIAN_CATALOG = selectedCatalog;
+    CHRISTIAN_LANGUAGE = selectedLanguage;
+    CHRISTIAN_COUNTRY = selectedCountry;
+  }
+
+  const list = (items || []).filter(item => {
+    // Películas: filtro por género
+    if(isMoviesCategory(catId) && selectedGenre !== "ALL"){
+      const gs = Array.isArray(item?.genres) ? item.genres : [];
+      if(!gs.includes(selectedGenre)) return false;
+    }
+
+    // Cristianos: catálogo
+    if(isChristianCategory(catId)){
+      if(selectedCatalog !== "ALL"){
+        const c = String(item?.catalog || "").trim();
+        if(c !== selectedCatalog) return false;
+      }
+
+      if(selectedLanguage !== "ALL"){
+        const langs = Array.isArray(item?.languages) ? item.languages : [];
+        if(!langs.includes(selectedLanguage)) return false;
+      }
+
+      if(selectedCountry !== "ALL"){
+        const ctry = String(item?.country || "").trim();
+        if(ctry !== selectedCountry) return false;
+      }
+    }
+
+    // búsqueda general
+    if(!q) return true;
+
+    const n = normText(item?.name || "");
+    const d = normText(item?.desc || "");
+    const c = normText(item?.catalog || "");
+    const ctry = normText(item?.country || "");
+    const langs = normText(Array.isArray(item?.languages) ? item.languages.join(" ") : "");
+
+    return (
+      n.includes(q) ||
+      d.includes(q) ||
+      c.includes(q) ||
+      ctry.includes(q) ||
+      langs.includes(q)
+    );
+  });
+
+  const cat = findCategoryById(catId);
+  PLAYLIST = buildPlaylistFromCategory(cat);
+
+  list.forEach(item => {
+    const hasEpisodes = Array.isArray(item.episodes) && item.episodes.length;
+    const type = normalizeType(item);
+
+    grid.appendChild(makeCard({
+      title: item.name,
+      desc: item.desc || "",
+      icon: item.poster || item.icon || "",
+      tag: hasEpisodes ? "SERIE" : ((type === "web") ? "WEB" : type.toUpperCase()),
+      onClick: () => {
+        if(isMediaCategory(catId)){
+          renderDetailView(catId, item);
+          return;
+        }
+
+        if(hasEpisodes){
+          const seriesId = item.id || item.name;
+          setRouteParams({ catId, seriesId });
+          renderByRoute();
+          return;
+        }
+
+        if(type === "web"){
+          openPlayer();
+          stopPlayers();
+          const iframe = $("iframePlayer");
+          iframe.allow = "autoplay; fullscreen; encrypted-media";
+          iframe.src = item.url;
+          iframe.style.display = "block";
+          setNowPlaying(item.name || "Web");
+          showHudAndArmTimer(false);
+          return;
+        }
+
+        const idx = PLAYLIST.findIndex(x => x.url === item.url && x.name === item.name);
+        if(idx >= 0) playChannelByIndex(idx);
+        else alert("Este ítem no está listo para reproducir");
+      }
+    }));
+  });
+
+  if(!list.length){
+    grid.appendChild(makeCard({
+      title: "Sin resultados",
+      desc: "Probá con otro filtro o término de búsqueda.",
+      icon: "assets/logo-header.png",
+      tag: "Buscar",
+      onClick: () => {}
+    }));
+  }
+}
+
+function setupEpisodeSearch(items){
+  const bar = $("episodeToolbar");
+  const inp = $("episodeSearch");
+  const clr = $("btnClearEpisodeSearch");
+  if(!bar || !inp || !clr) return;
+
+  bar.hidden = false;
+  inp.value = "";
+
+  if(!inp.dataset.bound){
+    inp.addEventListener("input", () => {
+      const q = normText(inp.value);
+      renderEpisodeItems(items, q);
+    });
+    inp.dataset.bound = "1";
+  }
+
+  if(!clr.dataset.bound){
+    clr.addEventListener("click", () => {
+      inp.value = "";
+      inp.dispatchEvent(new Event("input"));
+      inp.focus();
+    });
+    clr.dataset.bound = "1";
+  }
+}
+
+function renderEpisodeItems(items, query){
+  const grid = $("episodeGrid");
+  grid.innerHTML = "";
+  const q = normText(query || "");
+
+  const list = (items || []).filter(ep => {
+    if(!q) return true;
+    const n = normText(ep?.name || "");
+    const d = normText(ep?.desc || "");
+    return n.includes(q) || d.includes(q);
+  });
+
+  list.forEach(ep => {
+    const type = normalizeType(ep);
+    grid.appendChild(makeCard({
+      title: ep.name,
+      desc: ep.desc || "",
+      icon: ep.icon,
+      tag: (type === "web") ? "WEB" : type.toUpperCase(),
+      onClick: () => {
+        if(type === "web"){
+          openPlayer();
+          stopPlayers();
+          const iframe = $("iframePlayer");
+          iframe.allow = "autoplay; fullscreen; encrypted-media";
+          iframe.src = ep.url;
+          iframe.style.display = "block";
+          setNowPlaying(ep.name || "Web");
+          showHudAndArmTimer(false);
+          return;
+        }
+        const idx = PLAYLIST.findIndex(x => x.url === ep.url && x.name === ep.name);
+        if(idx >= 0) playChannelByIndex(idx);
+        else {
+          // fallback: reproducir directo
+          const tmp = { name: ep.name, url: ep.url, type: normalizeType(ep), icon: ep.icon };
+          PLAYLIST = [tmp];
+          playChannelByIndex(0);
+        }
+      }
+    }));
+  });
+
+  if(!list.length){
+    grid.appendChild(makeCard({
+      title: "Sin resultados",
+      desc: "Probá con otro término.",
+      icon: "assets/logo-header.png",
+      tag: "Buscar",
+      onClick: () => {}
+    }));
+  }
+}
+
+
+;
