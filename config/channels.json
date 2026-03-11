@@ -161,8 +161,7 @@
         {
           "name": "ESPN",
           "type": "hls",
-          "url": "
-https://qbk4f.envivoslatam.org/espnpremium/tracks-v1a1/mono.m3u8?ip=148.222.222.153&token=44dc114047161a9ed3bd3469a2ae6b06e028b8b2-4e-1773314456-1773260456",
+          "url": "https://qbk4f.envivoslatam.org/espnpremium/tracks-v1a1/mono.m3u8?ip=148.222.222.153&token=44dc114047161a9ed3bd3469a2ae6b06e028b8b2-4e-1773314456-1773260456",
           "icon": "assets/espn.jpeg",
           "id": "espn"
         },
