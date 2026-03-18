@@ -147,35 +147,35 @@
         {
           "name": "TyC Sports",
           "type": "hls",
-          "url": "https://ub2dr.envivoslatam.org/tycsports/tracks-v1a1/mono.m3u8?ip=148.222.223.128&token=5125ab262c96a630a6e146034b50eb0ea9213915-55-1773799931-1773745931",
+          "url": "https://ub2dr.envivoslatam.org/tycsports/tracks-v1a1/mono.m3u8?ip=148.227.121.186&token=62b1d698c96c93a5f1db7f756a776beebb0964ca-f6-1773838506-1773784506",
           "icon": "assets/tycsports.png",
           "id": "tyc-sports"
         },
         {
           "name": "TNT Sport",
           "type": "hls",
-          "url": "https://vg7ie.envivoslatam.org/tntsports/tracks-v1a1/mono.m3u8?ip=148.222.223.128&token=1fd5b5275a696c83c8880fb290acc83bec4617f7-46-1773799894-1773745894",
+          "url": "https://afy4c.envivoslatam.org/tntsports/tracks-v1a1/mono.m3u8?ip=148.227.121.186&token=a36737dc691ebfe6e8038b0b68b274bd65180d8b-3f-1773838636-1773784636",
           "icon": "assets/tntsports.jpeg",
           "id": "tnt-sport"
         },
         {
           "name": "ESPN",
           "type": "hls",
-          "url": "https://ub2dr.envivoslatam.org/espnpremium/tracks-v1a1/mono.m3u8?ip=148.222.223.128&token=0743a38d8080d2b5fda940c8786075676b263212-76-1773799851-1773745851",
+          "url": "https://ng0pr.envivoslatam.org/espnpremium/tracks-v1a1/mono.m3u8?ip=148.227.121.186&token=94da0c8522309821efea831e11af1e3cc3ba96c8-64-1773838687-1773784687",
           "icon": "assets/espn.jpeg",
           "id": "espn"
         },
         {
           "name": "Directv Sports",
           "type": "hls",
-          "url": "https://ub2dr.envivoslatam.org/dsports/tracks-v1a1/mono.m3u8?ip=148.222.223.128&token=a26fc154bd982d53d9c8c2e12b90d003eb5bf185-7c-1773799813-1773745813",
+          "url": "https://smjt9q.envivoslatam.org/dsports/tracks-v1a1/mono.m3u8?ip=148.227.121.186&token=21fc9ca600beaf3f066f2ec3f34901d37923bf33-38-1773838737-1773784737",
           "icon": "assets/directv.png",
           "id": "directv-sports"
         },
         {
           "name": "Fox Sport",
           "type": "hls",
-          "url": "https://ub2dr.envivoslatam.org/foxsports/tracks-v1a1/mono.m3u8?ip=148.222.223.128&token=f12832800629659bb7be0b4a4bc2c024cd122b40-dc-1773799768-1773745768",
+          "url": "https://ub2dr.envivoslatam.org/foxsports/tracks-v1a1/mono.m3u8?ip=148.227.121.186&token=aefb2adfa202ddb042a31f4d436061a8b3a64b4c-22-1773838786-1773784786",
           "icon": "assets/fox.png",
           "id": "fox-sports"
         },
