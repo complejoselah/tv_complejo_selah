@@ -147,7 +147,7 @@
         {
           "name": "TyC Sports",
           "type": "hls",
-          "url": "",
+          "url": "https://p2.domain761.sbs/tycint/tracks-v1a1/mono.m3u8?ip=98.97.134.139&token=6accd3fd97fc443f18c1f794a5226324e3eb786f-b7-1785495335-1785441335",
           "icon": "assets/tycsports.png",
           "id": "tyc-sports"
         },
@@ -161,14 +161,14 @@
         {
           "name": "ESPN",
           "type": "hls",
-          "url": "https://se.tudeporteshoy.xyz/espnpremium/tracks-v1a1/mono.m3u8?ip=179.238.43.158&token=4b74167064bf754ff52dbee65a4d0035a5f811b3-c2-1785413058-1785359058",
+          "url": "https://se.tudeporteshoy.xyz/espnpremium/tracks-v1a1/mono.m3u8?ip=98.97.134.139&token=e505bf9febb3469a9fd02c9797f869383782ce9a-c8-1785495264-1785441264",
           "icon": "assets/espn.jpeg",
           "id": "espn"
         },
         {
           "name": "Directv Sports",
           "type": "hls",
-          "url": "https://mivra.vivolatamz.org/dsports/tracks-v1a1/mono.m3u8?ip=181.44.130.47&token=67e2f3308b62ad8213faea81a24301bbe3b8c5fe-6b-1782652042-1782598042",
+          "url": "https://sa.tudeporteshoy.xyz/dsports/tracks-v1a1/mono.m3u8?ip=98.97.134.139&token=20f9298ffbe8fb5856d9f6b392d7184259bf33a4-48-1785495418-1785441418",
           "icon": "assets/directv.png",
           "id": "directv-sports"
         },
