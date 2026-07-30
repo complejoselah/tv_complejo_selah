@@ -154,7 +154,7 @@
         {
           "name": "TNT Sport",
           "type": "hls",
-          "url": "https://p1.domain761.sbs/tntar/tracks-v1a1/mono.m3u8?ip=179.238.43.158&token=8c9efebc5667649e9d29c9a79267f00d3f6ce270-8e-1785413426-1785359426",
+          "url": "https://s2.tudeporteshoy.xyz/tntsports/tracks-v1a1/mono.m3u8?ip=98.97.134.139&token=553af1c604156fa835d0c10ce85a807dcec8abb8-a5-1785495061-1785441061",
           "icon": "assets/tntsports.jpeg",
           "id": "tnt-sport"
         },
