@@ -168,7 +168,7 @@
         {
           "name": "Directv Sports",
           "type": "hls",
-          "url": "https://sa.tudeporteshoy.xyz/dsports/tracks-v1a1/mono.m3u8?ip=98.97.134.139&token=20f9298ffbe8fb5856d9f6b392d7184259bf33a4-48-1785495418-1785441418",
+          "url": "https://yxdlc29tzq.fubo18.com/dsports_eventos/mono.m3u8?token=4e5163ab57b2da668affc9c7c191a0a83002365a-9f-1785475250-1785457250",
           "icon": "assets/directv.png",
           "id": "directv-sports"
         },
