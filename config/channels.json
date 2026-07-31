@@ -154,28 +154,28 @@
         {
           "name": "TNT Sport",
           "type": "hls",
-          "url": "https://s2.tudeporteshoy.xyz/tntsports/tracks-v1a1/mono.m3u8?ip=98.97.134.139&token=553af1c604156fa835d0c10ce85a807dcec8abb8-a5-1785495061-1785441061",
+          "url": "https://p2.domain761.sbs/tntar/tracks-v1a1/mono.m3u8?ip=148.227.75.170&token=bdb5dcc5b68627df75d39dc2aa43deabb4874ada-3b-1785580882-1785526882",
           "icon": "assets/tntsports.jpeg",
           "id": "tnt-sport"
         },
         {
           "name": "ESPN",
           "type": "hls",
-          "url": "https://se.tudeporteshoy.xyz/espnpremium/tracks-v1a1/mono.m3u8?ip=98.97.134.139&token=e505bf9febb3469a9fd02c9797f869383782ce9a-c8-1785495264-1785441264",
+          "url": "",
           "icon": "assets/espn.jpeg",
           "id": "espn"
         },
         {
           "name": "Directv Sports",
           "type": "hls",
-          "url": "https://yxdlc29tzq.fubo18.com/dsports_eventos/mono.m3u8?token=4e5163ab57b2da668affc9c7c191a0a83002365a-9f-1785475250-1785457250",
+          "url": "",
           "icon": "assets/directv.png",
           "id": "directv-sports"
         },
         {
           "name": "Fox Sport",
           "type": "hls",
-          "url": "https://p1.domain761.sbs/foxdeportes/tracks-v1a1/mono.m3u8?ip=179.238.43.158&token=cb0544f50a170608f5e065a24e302301f6708ed8-6a-1785413530-1785359530",
+          "url": "",
           "icon": "assets/fox.png",
           "id": "fox-sports"
         },
