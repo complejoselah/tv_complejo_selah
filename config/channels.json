@@ -154,14 +154,14 @@
         {
           "name": "TNT Sport",
           "type": "hls",
-          "url": "https://1.tvlibre.pe/tntsports/mono.m3u8?token=722240fb55a9b1bfd5a74f881c14971402771417-e1-1785614712-1785596712",
+          "url": "https://8.tvlibre.pe/tntsports/mono.m3u8?token=af00e37f82876e598797eb3c4b3e7d18d76a1737-e5-1785641195-1785623195",
           "icon": "assets/tntsports.jpeg",
           "id": "tnt-sport"
         },
         {
           "name": "ESPN",
           "type": "hls",
-          "url": "https://2.tvlibre.pe/espnpremium/mono.m3u8?token=1324917e9b04c78ad3a21a5d0489d32304fbf3ac-6b-1785614631-1785596631",
+          "url": "https://9.tvlibre.pe/espnpremium/mono.m3u8?token=c0a6f29648c4fdefb6e3bd439f4e8eaef629ba9a-f9-1785641124-1785623124",
           "icon": "assets/espn.jpeg",
           "id": "espn"
         },
