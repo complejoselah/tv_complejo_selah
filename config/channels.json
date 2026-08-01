@@ -91,7 +91,7 @@
         {
           "name": "C5N - En vivo",
           "type": "youtube",
-          "url": "j6oh4Kqz3UM?si=sh4uFKqyFLKIP-iy",
+          "url": "j6oh4Kqz3UM",
           "icon": "assets/c5n.jpeg",
           "id": "c5n-en-vivo"
         },
@@ -105,14 +105,14 @@
         {
           "name": "AR 12 - En vivo",
           "type": "youtube",
-          "url": "21UP3XoRIBU?si=RN1YjLoN367zMNpE",
+          "url": "21UP3XoRIBU",
           "icon": "assets/ar12.jpg",
           "id": "ar-12-en-vivo"
         },
         {
           "name": "Cronica - En vivo",
           "type": "youtube",
-          "url": "hw4uHyct4vg?si=966bDFP3IThyx7NM",
+          "url": "hw4uHyct4vg",
           "icon": "assets/cronica.jpeg",
           "id": "cronica-en-vivo"
         },
