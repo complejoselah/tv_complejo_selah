@@ -98,21 +98,21 @@
         {
           "name": "LN+ - En vivo",
           "type": "youtube",
-          "url": "FEWZjXJ7M0c",
+          "url": "FEWZjXJ7M0c?si=jxd-z05HM_5enUU5",
           "icon": "assets/ln.jpg",
           "id": "ln-en-vivo"
         },
         {
           "name": "AR 12 - En vivo",
           "type": "youtube",
-          "url": "JrmCaXL5GZs",
+          "url": "21UP3XoRIBU?si=RN1YjLoN367zMNpE",
           "icon": "assets/ar12.jpg",
           "id": "ar-12-en-vivo"
         },
         {
           "name": "Cronica - En vivo",
           "type": "youtube",
-          "url": "sGnaFL_Syl0",
+          "url": "hw4uHyct4vg?si=966bDFP3IThyx7NM",
           "icon": "assets/cronica.jpeg",
           "id": "cronica-en-vivo"
         },
