@@ -154,14 +154,14 @@
         {
           "name": "TNT Sport",
           "type": "hls",
-          "url": "https://am91cm5leq.fubo18.com/tntsports/mono.m3u8?token=3d4024b801d43c8851b4624e87b2fb897b3cbf24-35-1785726639-1785708639",
+          "url": "https://sa.tudeporteshoy.xyz/tntsports/tracks-v1a1/mono.m3u8?ip=153.67.181.202&token=ef1bc4d29e218d27d2e426cea5c75e8439fabda9-80-1787566555-1787512555",
           "icon": "assets/tntsports.jpeg",
           "id": "tnt-sport"
         },
         {
           "name": "ESPN",
           "type": "hls",
-          "url": "https://s2.tudeporteshoy.xyz/espn/tracks-v1a1/mono.m3u8?ip=153.67.181.67&token=535378fbacac92003333b9ef40057f20bc6b9bea-0a-1787451741-1787397741",
+          "url": "https://ewvz.fubo18.com/espnpremium/mono.m3u8?token=7c0016ca567828c7690021cf2888c9e718a5ca35-9a-1787538590-1787520590",
           "icon": "assets/espn.jpeg",
           "id": "espn"
         },
