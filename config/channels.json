@@ -168,7 +168,7 @@
         {
           "name": "Directv Sports",
           "type": "hls",
-          "url": "https://p2.domain761.sbs/dsports/tracks-v1a1/mono.m3u8?ip=143.105.136.101&token=603496c17128475f5f6674519b37c75dbba15954-0e-1785735185-1785681185",
+          "url": "https://sa.tudeporteshoy.xyz/tntsports/tracks-v1a1/mono.m3u8?ip=153.67.181.202&token=ef1bc4d29e218d27d2e426cea5c75e8439fabda9-80-1787566555-1787512555",
           "icon": "assets/directv.png",
           "id": "directv-sports"
         },
