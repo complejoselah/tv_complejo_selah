@@ -91,7 +91,7 @@
         {
           "name": "C5N - En vivo",
           "type": "youtube",
-          "url": "j6oh4Kqz3UM",
+          "url": "rZtTUCxpPuI",
           "icon": "assets/c5n.jpeg",
           "id": "c5n-en-vivo"
         },
@@ -203,21 +203,21 @@
         {
           "name": "TV Pública - En vivo",
           "type": "youtube",
-          "url": "2WyAPg0CYRY",
+          "url": "Dr1obrM-Mac",
           "icon": "assets/tvp.png",
           "id": "tv-publica-en-vivo"
         },
         {
           "name": "DW Español - En vivo",
           "type": "youtube",
-          "url": "jRnqxURJ120",
+          "url": "yZh3xsFqCt8",
           "icon": "assets/dw.png",
           "id": "dw-espanol-en-vivo"
         },
         {
           "name": "France 24 Español - En vivo",
           "type": "youtube",
-          "url": "Y-IlMeCCtIg",
+          "url": "zTv0hCakAhg",
           "icon": "assets/france24.png",
           "id": "france-24-espanol-en-vivo"
         },
@@ -231,14 +231,14 @@
         {
           "name": "NASA (YouTube oficial)",
           "type": "youtube",
-          "url": "FV4Q9DryTG8",
+          "url": "ROboUHfPUrU",
           "icon": "assets/nasa.jpeg",
           "id": "nasa-youtube-oficial"
         },
         {
           "name": "Africa en Vivo",
           "type": "youtube",
-          "url": "XsOU8JnEpNM",
+          "url": "EbdnE0I_Aoo",
           "icon": "assets/africa.jpeg",
           "id": "africa-en-vivo"
         },
@@ -259,7 +259,7 @@
         {
           "name": "LoFi Girl - Música",
           "type": "youtube",
-          "url": "jfKfPfyJRdk",
+          "url": "4t4AQ15yj1M",
           "icon": "assets/lofi.jpg",
           "id": "lofi-girl-musica"
         },
@@ -334,7 +334,7 @@
         {
           "name": "LoFi Girl - Música",
           "type": "youtube",
-          "url": "jfKfPfyJRdk",
+          "url": "4t4AQ15yj1M",
           "icon": "assets/lofi.jpg",
           "id": "lofi-girl-musica-musica-relax"
         },
